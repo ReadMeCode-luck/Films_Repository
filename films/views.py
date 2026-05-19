@@ -7,7 +7,7 @@ def index(request):
     context = {
         'films': films
     }
-    return render(request, '', context)
+    return render(request, 'home.html', context)
 
 class FilmList(ListAPIView):
     queryset = Film.objects.all()
