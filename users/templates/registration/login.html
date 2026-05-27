@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121318;
+            --card-bg: #1a1b22;
+            --input-bg: #22232a;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --accent-color: #e52e2e;
+            --accent-hover: #b82020;
+            --border-color: #2f303a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .auth-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header-section h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            background-color: var(--input-bg);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 12px 14px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: var(--input-bg);
+            border-color: var(--accent-color);
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+
+        .input-group .toggle-password:hover {
+            color: var(--text-main);
+        }
+
+        .input-group .toggle-password img {
+            width: 18px;
+            height: 18px;
+        }
+
+        .input-group .form-control.password-input {
+            padding-right: 45px;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0 20px 0;
+            font-size: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .remember-me input {
+            display: none;
+        }
+
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--accent-color);
+            border-radius: 4px;
+            margin-right: 8px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .remember-me input:checked + .checkbox-custom::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            width: 4px;
+            height: 8px;
+            border: solid var(--accent-color);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .forgot-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px 14px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-hover);
+            color: white;
+        }
+
+        .switch-form {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .switch-form a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .messages {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1050;
+            max-width: 400px;
+        }
+
+        .alert {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .forgot-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 1055;
+        }
+
+        .forgot-modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .forgot-modal .modal-content {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .forgot-modal .close-modal {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .forgot-modal h3 {
+            margin-bottom: 12px;
+            font-size: 20px;
+            color: var(--text-main);
+        }
+
+        .forgot-modal .modal-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .forgot-modal .modal-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        @media (max-width: 576px) {
+            .auth-container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+
+            .header-section h2 {
+                font-size: 24px;
+            }
+
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="auth-container">
+        <div class="header-section">
+            <h2>С возвращением</h2>
+            <p class="subtitle">Введите логин и пароль для входа.</p>
+        </div>
+
+        <form method="post" id="login-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div style="padding: 12px; background-color: rgba(255, 107, 107, 0.1); border-left: 3px solid #ff6b6b; margin-bottom: 16px; border-radius: 4px;">
+                        <span class="error-message" style="margin-top: 0;">{{ error }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-group">
+                <label for="username">Логин или Email</label>
+                <input
+                    type="text"
+                    class="form-control save-state"
+                    id="username"
+                    name="username"
+                    placeholder="Логин или email"
+                    value="{{ form.username.value|default_if_none:'' }}"
+                    required
+                >
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <div class="input-group">
+                    <input
+                        type="password"
+                        class="form-control password-input"
+                        id="password"
+                        name="password"
+                        placeholder="Пароль"
+                        required
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword('password', this)">
+                        <img src="{% static 'image/hidden.png' %}" alt="Показать пароль" width="18" height="18">
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember_me">
+                    <span class="checkbox-custom"></span>
+                    Запомнить меня
+                </label>
+                <a href="#" class="forgot-link" onclick="showForgotPassword(event)">Забыли пароль?</a>
+            </div>
+
+            <button type="submit" class="submit-btn">Войти</button>
+        </form>
+
+        <div class="switch-form">
+            Еще нет аккаунта?
+            <a href="{% url 'register' %}">Зарегистрироваться</a>
+        </div>
+    </div>
+
+    <div class="forgot-modal" id="forgot-modal">
+        <div class="modal-content">
+            <button class="close-modal" type="button" onclick="closeForgotPassword()">×</button>
+            <h3>Сброс пароля</h3>
+            <p class="subtitle">Введите свой email, и мы пришлем ссылку для восстановления.</p>
+            <form method="post" action="{% url 'password_reset' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="forgot-email">Электронная почта</label>
+                    <div class="input-group">
+                        <input id="forgot-email" name="email" type="email" class="form-control" placeholder="Электронная почта" required>
+                    </div>
+                </div>
+                <button type="submit" class="modal-btn">Отправить ссылку</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const STATIC_HIDDEN = "{% static 'image/hidden.png' %}";
+        const STATIC_EYE = "{% static 'image/eye.png' %}";
+
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                button.innerHTML = `<img src="${STATIC_EYE}" alt="Скрыть пароль" width="18" height="18">`;
+            } else {
+                input.type = "password";
+                button.innerHTML = `<img src="${STATIC_HIDDEN}" alt="Показать пароль" width="18" height="18">`;
+            }
+        }
+
+        function showForgotPassword(event) {
+            event.preventDefault();
+            document.getElementById('forgot-modal').classList.add('active');
+        }
+
+        function closeForgotPassword() {
+            document.getElementById('forgot-modal').classList.remove('active');
+        }
+
+        // --- Код для сохранения состояния полей ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const storageKeyPrefix = 'login_form_';
+            const inputsToSave = document.querySelectorAll('.save-state');
+            const form = document.getElementById('login-form');
+
+            // Восстановление данных из sessionStorage при загрузке страницы
+            inputsToSave.forEach(input => {
+                const savedValue = sessionStorage.getItem(storageKeyPrefix + input.id);
+                // Заполняем поле из хранилища только в том случае, если Django не прислал новое значение формы (value пустое)
+                if (savedValue && !input.value) {
+                    input.value = savedValue;
+                }
+
+                // Сохранение изменений в sessionStorage при вводе
+                input.addEventListener('input', () => {
+                    sessionStorage.setItem(storageKeyPrefix + input.id, input.value);
+                });
+            });
+
+            // Очистка хранилища при успешной отправке формы
+            if (form) {
+                form.addEventListener('submit', () => {
+                    inputsToSave.forEach(input => {
+                        sessionStorage.removeItem(storageKeyPrefix + input.id);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

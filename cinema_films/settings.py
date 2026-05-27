@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'films.apps.FilmsConfig',
     'rest_framework',
     'image_uploader_widget',
+    'users.apps.UsersConfig',
 ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -122,4 +122,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+AUTH_USER_MODEL = 'users.CustomUser'
+
+# Directories where Django looks for static files (app-level static folders)
+STATICFILES_DIRS = [
+    BASE_DIR / 'films' / 'static',
+    BASE_DIR / 'static',
+]
+
+# Email settings: development prints emails to console. Replace with SMTP in production.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'webmaster@localhost'

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,7 +28,7 @@
             width: 100%;
             height: 695px;
             background: radial-gradient(circle at 50% 50%, rgba(11, 6, 6, 0.2) 0%, rgba(11, 6, 6, 0.95) 80%),
-            url('./image/1.svg') no-repeat center top;
+            url('{% static "image/1.svg" %}') no-repeat center top;
             background-size: cover;
             z-index: -1;
         }
@@ -559,7 +560,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(to right, rgba(11, 6, 6, 1) 25%, rgba(11, 6, 6, 0.3) 60%, rgba(11, 6, 6, 0) 100%),
-            url('./image/Batmen.svg') no-repeat center right;
+            url('{% static "image/Batmen.svg" %}') no-repeat center right;
             background-size: cover;
             z-index: 1;
         }
@@ -697,6 +698,683 @@
             box-shadow: 0 0 8px #e51a4c;
         }
 
+        /* Footer */
+        footer {
+            background-color: #090505;
+            color: #c7c7c7;
+            padding: 40px 20px 30px;
+        }
+
+        .footer-inner {
+            max-width: 1120px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: space-between;
+        }
+
+        .footer-widget {
+            min-width: 220px;
+            flex: 1;
+        }
+
+        .footer-logo h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #ffffff;
+        }
+
+        .footer-logo p {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #a3a3a3;
+            max-width: 280px;
+        }
+
+        .footer-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .footer-links a {
+            color: #b5b5b5;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.8;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+        }
+
+        .footer-bottom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-top: 30px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-icon {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .social-icon:hover {
+            background-color: #e51a4c;
+            border-color: #e51a4c;
+        }
+
+        .footer-note {
+            font-size: 13px;
+            color: #8f8f8f;
+        }
+
+        /* АДАПТИВ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
+        @media (max-width: 1200px) {
+            header {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .left-nav {
+                flex-direction: column;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .search-bar input {
+                width: 100%;
+            }
+
+            main {
+                margin-top: 40px;
+                padding: 0 20px;
+                justify-content: center;
+            }
+
+            .movie-info {
+                text-align: center;
+                max-width: 100%;
+            }
+
+            .movie-title {
+                font-size: 36px;
+            }
+
+            .stats-row {
+                justify-content: center;
+            }
+
+            .filters-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .movie-card {
+                min-width: calc(25% - 11px);
+                max-width: calc(25% - 11px);
+            }
+
+            .promo-container {
+                height: 300px;
+                margin: 30px 20px;
+            }
+
+            .promo-content {
+                padding: 25px;
+            }
+
+            .promo-title {
+                font-size: 22px;
+            }
+
+            .footer-links {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 15px;
+            }
+
+            .logo-section {
+                padding: 6px 10px;
+            }
+
+            .logo-text h1 {
+                font-size: 14px;
+            }
+
+            .logo-text p {
+                font-size: 10px;
+            }
+
+            .search-bar input {
+                width: 100%;
+                padding: 8px 10px 8px 30px;
+                font-size: 12px;
+            }
+
+            .main-menu {
+                display: none;
+            }
+
+            .btn-register {
+                padding: 8px 16px;
+                font-size: 12px;
+                width: 100%;
+            }
+
+            main {
+                margin-top: 30px;
+                padding: 0 15px;
+            }
+
+            .movie-title {
+                font-size: 28px;
+            }
+
+            .movie-subtitle {
+                font-size: 12px;
+            }
+
+            .section-title {
+                font-size: 16px;
+            }
+
+            .plot-text {
+                font-size: 13px;
+            }
+
+            .stat-item {
+                font-size: 13px;
+            }
+
+            .btn-watch {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .search-container {
+                padding: 0 15px;
+            }
+
+            .simple-search-box {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .simple-search-inputs {
+                flex-direction: column;
+                max-width: none;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .bottom-actions {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .checkbox-options {
+                gap: 15px;
+            }
+
+            .checkbox-options label {
+                width: 100%;
+            }
+
+            .catalog-container {
+                padding: 0 15px;
+            }
+
+            .catalog-section {
+                margin-bottom: 30px;
+            }
+
+            .movie-card {
+                min-width: calc(50% - 7.5px);
+                max-width: calc(50% - 7.5px);
+            }
+
+            .movie-track {
+                gap: 10px;
+            }
+
+            .card-title {
+                font-size: 12px;
+            }
+
+            .card-meta {
+                font-size: 11px;
+            }
+
+            .promo-container {
+                height: 250px;
+                margin: 25px 15px;
+                border-radius: 8px;
+            }
+
+            .promo-background {
+                background-size: contain;
+            }
+
+            .promo-content {
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            .promo-title {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+
+            .promo-subtitle {
+                font-size: 11px;
+                margin-bottom: 12px;
+            }
+
+            .promo-section-title {
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+
+            .promo-plot {
+                font-size: 11px;
+                margin-bottom: 10px;
+            }
+
+            .promo-meta-line {
+                font-size: 12px;
+                margin-bottom: 10px;
+            }
+
+            .promo-stats-row {
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+
+            .promo-stat-item {
+                font-size: 12px;
+            }
+
+            .promo-rating-badge {
+                font-size: 10px;
+                padding: 1px 4px;
+            }
+
+            .btn-promo-watch {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .footer-widget {
+                min-width: auto;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .social-icons {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-bottom: 40px;
+            }
+
+            header {
+                padding: 10px 10px;
+                gap: 10px;
+            }
+
+            .logo-section {
+                min-width: auto;
+            }
+
+            .logo-text h1 {
+                font-size: 13px;
+            }
+
+            .search-bar input {
+                width: 100%;
+                padding: 6px 8px 6px 28px;
+                font-size: 11px;
+            }
+
+            .search-bar::before {
+                font-size: 10px;
+                left: 8px;
+            }
+
+            .btn-register {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+
+            .hero-background {
+                height: 400px;
+            }
+
+            main {
+                margin-top: 20px;
+                padding: 0 12px;
+            }
+
+            .movie-title {
+                font-size: 22px;
+            }
+
+            .movie-subtitle {
+                font-size: 11px;
+            }
+
+            .section-title {
+                font-size: 14px;
+            }
+
+            .plot-text {
+                font-size: 12px;
+                line-height: 1.5;
+            }
+
+            .meta-line {
+                font-size: 12px;
+            }
+
+            .stat-item {
+                font-size: 12px;
+            }
+
+            .btn-watch {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .slider-controls {
+                margin-top: 30px;
+                margin-bottom: 30px;
+                gap: 8px;
+            }
+
+            .slider-arrow {
+                font-size: 16px;
+            }
+
+            .dot {
+                width: 8px;
+                height: 8px;
+            }
+
+            .search-container {
+                padding: 0 12px;
+                margin-top: 20px;
+            }
+
+            .simple-search-box {
+                padding: 12px 12px;
+                margin-bottom: 12px;
+            }
+
+            .simple-search-title {
+                font-size: 14px;
+            }
+
+            .simple-search-inputs input {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+
+            .btn-search-pink {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .advanced-search-box {
+                padding: 12px;
+            }
+
+            .advanced-header {
+                margin-bottom: 12px;
+            }
+
+            .advanced-title {
+                font-size: 14px;
+            }
+
+            .toggle-icon {
+                font-size: 14px;
+            }
+
+            .filters-grid {
+                gap: 10px;
+            }
+
+            .filter-item label {
+                font-size: 12px;
+            }
+
+            .filter-item input, .filter-item select {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            .bottom-actions {
+                padding-top: 12px;
+            }
+
+            .opt-label {
+                font-size: 12px;
+                gap: 6px;
+            }
+
+            .opt-label input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+            }
+
+            .catalog-container {
+                padding: 0 12px;
+                margin: 20px auto 0 auto;
+            }
+
+            .section-header {
+                margin-bottom: 12px;
+            }
+
+            .catalog-title {
+                font-size: 16px;
+            }
+
+            .nav-arrow {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .movie-card {
+                min-width: calc(100% - 0px);
+                max-width: calc(100% - 0px);
+            }
+
+            .movie-track {
+                gap: 10px;
+            }
+
+            .card-title {
+                font-size: 11px;
+            }
+
+            .card-meta {
+                font-size: 10px;
+            }
+
+            .btn-show-more {
+                padding: 6px 20px;
+                font-size: 12px;
+            }
+
+            .promo-container {
+                height: 220px;
+                margin: 20px 12px;
+            }
+
+            .promo-content {
+                padding: 15px;
+            }
+
+            .promo-title {
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+
+            .promo-subtitle {
+                font-size: 10px;
+                margin-bottom: 8px;
+            }
+
+            .promo-section-title {
+                font-size: 12px;
+                margin-bottom: 4px;
+            }
+
+            .promo-plot {
+                font-size: 10px;
+                margin-bottom: 8px;
+                line-height: 1.4;
+            }
+
+            .promo-meta-line {
+                font-size: 11px;
+                margin-bottom: 8px;
+            }
+
+            .promo-stats-row {
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
+            .promo-stat-item {
+                font-size: 11px;
+            }
+
+            .promo-rating-badge {
+                font-size: 9px;
+            }
+
+            .btn-promo-watch {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+
+            .promo-slider-controls {
+                bottom: 15px;
+                padding: 4px 10px;
+            }
+
+            .promo-arrow {
+                font-size: 12px;
+                padding: 0 3px;
+            }
+
+            .promo-dot {
+                width: 6px;
+                height: 6px;
+            }
+
+            footer {
+                padding: 25px 12px 20px;
+            }
+
+            .footer-inner {
+                gap: 15px;
+            }
+
+            .footer-widget {
+                min-width: auto;
+            }
+
+            .footer-logo h3 {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+
+            .footer-logo p {
+                font-size: 12px;
+            }
+
+            .footer-title {
+                font-size: 12px;
+                margin-bottom: 12px;
+            }
+
+            .footer-links {
+                gap: 6px;
+            }
+
+            .footer-links a {
+                font-size: 12px;
+            }
+
+            .footer-bottom {
+                padding-top: 15px;
+                margin-top: 15px;
+            }
+
+            .social-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .footer-note {
+                font-size: 11px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -704,8 +1382,16 @@
 <div class="hero-background"></div>
 
 <header>
+    <div class="logo-section">
+        <a href="{% url 'index' %}" style="color:inherit;text-decoration:none;display:flex;align-items:center;">
+            <div class="logo-text">
+                <h1>Синема Сити</h1>
+                <p>Онлайн просмотр и скачивание</p>
+            </div>
+        </a>
+    </div>
+
     <div class="left-nav">
-        <button class="btn-register">Регистрация</button>
         <div class="search-bar">
             <input type="text" placeholder="Поиск...">
         </div>
@@ -716,15 +1402,29 @@
             <li><a href="#">Фильмы</a></li>
             <li><a href="#" class="active">Главная</a></li>
         </ul>
+        <!-- Ссылка на страницу входа (Django) -->
+        {% if user.is_authenticated %}
+            <span style="color: #e51a4c; font-weight: bold; padding: 0 15px;">{{ user.username }}</span>
+            <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-register">Выход</button>
+            </form>
+        {% else %}
+            <a href="{% url 'entrance' %}" class="btn-register">Вход</a>
+        {% endif %}
     </div>
 
-    <div class="logo-section">
-        <div class="logo-text">
-            <h1>Синема Сити</h1>
-            <p>Онлайн просмотр и скачивание</p>
-        </div>
-    </div>
 </header>
+
+{% if messages %}
+<div style="position: fixed; top: 80px; right: 20px; z-index: 1000; max-width: 350px;">
+    {% for message in messages %}
+        <div style="background-color: #1a1515; border-left: 4px solid {% if message.tags %}#e51a4c{% else %}#4caf50{% endif %}; padding: 16px; margin-bottom: 10px; border-radius: 6px; color: #fff; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
 
 <main>
     <div class="movie-info">
@@ -965,7 +1665,7 @@
                 <!-- Карточка 5 -->
                 <div class="movie-card">
                     <div class="card-poster-wrapper">
-                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <img src="{% static 'image/1.svg' %}" alt="Постер" class="card-image">
                         <div class="poster-overlay">
                             <div class="overlay-section">
                                 <h4>Синопсис</h4>
@@ -987,7 +1687,7 @@
                 <!-- Карточка 6 (Добавлена для демонстрации прокрутки) -->
                 <div class="movie-card">
                     <div class="card-poster-wrapper">
-                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <img src="" alt="Постер" class="card-image">
                         <div class="poster-overlay">
                             <div class="overlay-section">
                                 <h4>Синопсис</h4>
@@ -1017,7 +1717,7 @@
     <!-- СЕКЦИЯ 2: СЕРИАЛЫ -->
     <section class="catalog-section" id="series-section">
         <div class="section-header">
-            <h2 class="catalog-title">Рекомендуемые сериалы</h2>
+            <h2 class="catalog-title">Рекомендуемые фильмы</h2>
             <div class="section-nav">
                 <span class="nav-arrow prev-btn">❮</span>
                 <span class="nav-arrow next-btn">❯</span>
@@ -1143,6 +1843,7 @@
         </div>
     </section>
 
+
 </div>
 
 <!-- ======================================================= -->
@@ -1192,6 +1893,355 @@
     </div>
 </div>
 
+<div class="catalog-container">
+
+    <!-- СЕКЦИЯ 1: ФИЛЬМЫ -->
+    <section class="catalog-section" id="movies-section">
+        <div class="section-header">
+            <h2 class="catalog-title">Рекомендуемые фильмы</h2>
+            <div class="section-nav">
+                <span class="nav-arrow prev-btn">❮</span>
+                <span class="nav-arrow next-btn">❯</span>
+            </div>
+        </div>
+
+        <div class="movie-slider-wrapper">
+            <div class="movie-grid movie-track">
+                <!-- Карточка 1 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Захватывающая музыкальная драма о поиске себя, творческом кризисе и мечтах.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Мюзикл, Драма</p>
+                            </div>
+                            <div class="age-badge">PG-13</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 1ч 55м</span>
+                        <span class="meta-rating">⭐ 7.5</span>
+                    </div>
+                    <h3 class="card-title">Tick Tick... Boom 2021</h3>
+                </div>
+                <!-- Карточка 2 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Продолжение культовой шпионской франшизы с опасными трюками.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Боевик, Триллер</p>
+                            </div>
+                            <div class="age-badge">PG-13</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 2ч 43м</span>
+                        <span class="meta-rating">⭐ 7.6</span>
+                    </div>
+                    <h3 class="card-title">Mission Impossible</h3>
+                </div>
+                <!-- Карточка 3 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Эпическая криминальная драма Мартина Скорсезе о серии загадочных убийств.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Драма, Криминал</p>
+                            </div>
+                            <div class="age-badge">R</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 3ч 26м</span>
+                        <span class="meta-rating">⭐ 8.1</span>
+                    </div>
+                    <h3 class="card-title">Killers Of The Flower Moon</h3>
+                </div>
+                <!-- Карточка 4 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Возвращение на Пандору. Джейк Салли и Нейтири защищают свой дом.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Фантастика, Боевик</p>
+                            </div>
+                            <div class="age-badge">PG-13</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 3ч 12м</span>
+                        <span class="meta-rating">⭐ 7.7</span>
+                    </div>
+                    <h3 class="card-title">Avatar The Way Of Water</h3>
+                </div>
+                <!-- Карточка 5 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="{% static 'image/1.svg' %}" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>История жизни Роберта Оппенгеймера, руководителя Манхэттенского проекта.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Биография, Драма</p>
+                            </div>
+                            <div class="age-badge">R</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 3ч 00м</span>
+                        <span class="meta-rating">⭐ 8.3</span>
+                    </div>
+                    <h3 class="card-title">Oppenheimer 2023</h3>
+                </div>
+                <!-- Карточка 6 (Добавлена для демонстрации прокрутки) -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Культовый научно-фантастический фильм о перемещении во времени и спасении
+                                    будущего.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Фантастика</p>
+                            </div>
+                            <div class="age-badge">PG-13</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 2ч 30м</span>
+                        <span class="meta-rating">⭐ 8.5</span>
+                    </div>
+                    <h3 class="card-title">Интерстеллар</h3>
+                </div>
+            </div>
+        </div>
+        <div class="center-btn-wrapper">
+            <button class="btn-show-more">Показать еще</button>
+        </div>
+    </section>
+
+        <!-- СЕКЦИЯ 1: ФИЛЬМЫ -->
+    <section class="catalog-section" id="movies-section">
+        <div class="section-header">
+            <h2 class="catalog-title">Рекомендуемые фильмы</h2>
+            <div class="section-nav">
+                <span class="nav-arrow prev-btn">❮</span>
+                <span class="nav-arrow next-btn">❯</span>
+            </div>
+        </div>
+
+        <div class="movie-slider-wrapper">
+            <div class="movie-grid movie-track">
+                <!-- Карточка 1 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Захватывающая музыкальная драма о поиске себя, творческом кризисе и мечтах.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Мюзикл, Драма</p>
+                            </div>
+                            <div class="age-badge">PG-13</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 1ч 55м</span>
+                        <span class="meta-rating">⭐ 7.5</span>
+                    </div>
+                    <h3 class="card-title">Tick Tick... Boom 2021</h3>
+                </div>
+                <!-- Карточка 2 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Продолжение культовой шпионской франшизы с опасными трюками.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Боевик, Триллер</p>
+                            </div>
+                            <div class="age-badge">PG-13</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 2ч 43м</span>
+                        <span class="meta-rating">⭐ 7.6</span>
+                    </div>
+                    <h3 class="card-title">Mission Impossible</h3>
+                </div>
+                <!-- Карточка 3 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Эпическая криминальная драма Мартина Скорсезе о серии загадочных убийств.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Драма, Криминал</p>
+                            </div>
+                            <div class="age-badge">R</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 3ч 26м</span>
+                        <span class="meta-rating">⭐ 8.1</span>
+                    </div>
+                    <h3 class="card-title">Killers Of The Flower Moon</h3>
+                </div>
+                <!-- Карточка 4 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="unsplash.com" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Возвращение на Пандору. Джейк Салли и Нейтири защищают свой дом.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Фантастика, Боевик</p>
+                            </div>
+                            <div class="age-badge">PG-13</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 3ч 12м</span>
+                        <span class="meta-rating">⭐ 7.7</span>
+                    </div>
+                    <h3 class="card-title">Avatar The Way Of Water</h3>
+                </div>
+                <!-- Карточка 5 -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="{% static 'image/1.svg' %}" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>История жизни Роберта Оппенгеймера, руководителя Манхэттенского проекта.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Биография, Драма</p>
+                            </div>
+                            <div class="age-badge">R</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 3ч 00м</span>
+                        <span class="meta-rating">⭐ 8.3</span>
+                    </div>
+                    <h3 class="card-title">Oppenheimer 2023</h3>
+                </div>
+                <!-- Карточка 6 (Добавлена для демонстрации прокрутки) -->
+                <div class="movie-card">
+                    <div class="card-poster-wrapper">
+                        <img src="" alt="Постер" class="card-image">
+                        <div class="poster-overlay">
+                            <div class="overlay-section">
+                                <h4>Синопсис</h4>
+                                <p>Культовый научно-фантастический фильм о перемещении во времени и спасении
+                                    будущего.</p>
+                            </div>
+                            <div class="overlay-section">
+                                <h4>Жанр</h4>
+                                <p class="pink-text">Фантастика</p>
+                            </div>
+                            <div class="age-badge">PG-13</div>
+                        </div>
+                    </div>
+                    <div class="card-meta">
+                        <span class="meta-duration">⏱ 2ч 30м</span>
+                        <span class="meta-rating">⭐ 8.5</span>
+                    </div>
+                    <h3 class="card-title">Интерстеллар</h3>
+                </div>
+            </div>
+        </div>
+        <div class="center-btn-wrapper">
+            <button class="btn-show-more">Показать еще</button>
+        </div>
+    </section>
+</div>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-widget footer-logo">
+            <h3>Синема Сити</h3>
+            <p>Лучший онлайн-кинотеатр для поиска фильмов, сериалов и анимации. Удобный интерфейс, новые релизы и подборки.</p>
+        </div>
+
+        <div class="footer-widget">
+            <div class="footer-title">Меню</div>
+            <div class="footer-links">
+                <a href="#">О нас</a>
+                <a href="#">Фильмы</a>
+                <a href="#">Сериалы</a>
+                <a href="#">Актеры</a>
+                <a href="#">Контакты</a>
+                <a href="#">Поддержка</a>
+            </div>
+        </div>
+
+        <div class="footer-widget">
+            <div class="footer-title">Поддержка</div>
+            <div class="footer-links">
+                <a href="#">FAQ</a>
+                <a href="#">Помощь</a>
+                <a href="#">Условия</a>
+                <a href="#">Конфиденциальность</a>
+                <a href="#">Обновления</a>
+                <a href="#">Отзывы</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-note">© 2026 Синема Сити. Все права защищены.</div>
+        <div class="social-icons">
+            <a href="#" class="social-icon">f</a>
+            <a href="#" class="social-icon">t</a>
+            <a href="#" class="social-icon">i</a>
+            <a href="#" class="social-icon">g</a>
+        </div>
+    </div>
+</footer>
 
 <script>
     // Функция инициализации работы слайдеров каталога
@@ -1228,7 +2278,7 @@
     initCatalogSlider('movies-section');
     initCatalogSlider('series-section');
     const slidesData = [
-        {title: "Oppenheimer 2023", subtitle: "Оппенгеймер", bg: "url('./image/1.svg')"},
+        {title: "Oppenheimer 2023", subtitle: "Оппенгеймер", bg: `url('{% static "image/1.svg" %}')`},
         {title: "Inception 2010", subtitle: "Начало", bg: "url('unsplash.com')"},
         {title: "Interstellar 2014", subtitle: "Интерстеллар", bg: "url('unsplash.com')"},
         {title: "The Dark Knight 2008", subtitle: "Темный рыцарь", bg: "url('unsplash.com')"},

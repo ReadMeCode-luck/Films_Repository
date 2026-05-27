@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121318;
+            --card-bg: #1a1b22;
+            --input-bg: #22232a;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --accent-color: #e52e2e;
+            --accent-hover: #b82020;
+            --border-color: #2f303a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .auth-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header-section h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            background-color: var(--input-bg);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 12px 14px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            background-color: var(--input-bg);
+            border-color: var(--accent-color);
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+
+        .input-group .toggle-password:hover {
+            color: var(--text-main);
+        }
+
+        .input-group .toggle-password img {
+            width: 18px;
+            height: 18px;
+        }
+
+        .input-group .form-control.password-input {
+            padding-right: 45px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px 14px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-hover);
+            color: white;
+        }
+
+        .switch-form {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .switch-form a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .messages {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1050;
+            max-width: 400px;
+        }
+
+        .alert {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 576px) {
+            .auth-container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+
+            .header-section h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="auth-container">
+        <div class="header-section">
+            <h2>Создать аккаунт</h2>
+            <p class="subtitle">Пожалуйста, введите данные для регистрации.</p>
+        </div>
+
+        <form method="post" id="register-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div style="padding: 12px; background-color: rgba(255, 107, 107, 0.1); border-left: 3px solid #ff6b6b; margin-bottom: 16px; border-radius: 4px;">
+                        <span class="error-message" style="margin-top: 0;">{{ error }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-group">
+                <label for="username">Логин</label>
+                <input
+                    type="text"
+                    class="form-control save-state"
+                    id="username"
+                    name="username"
+                    placeholder="Логин (будет виден другим)"
+                    value="{{ form.username.value|default_if_none:'' }}"
+                    required
+                >
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="email">Электронная почта</label>
+                <input
+                    type="email"
+                    class="form-control save-state"
+                    id="email"
+                    name="email"
+                    placeholder="Электронная почта"
+                    value="{{ form.email.value|default_if_none:'' }}"
+                    required
+                >
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="full_name">Полное имя (ФИО)</label>
+                <input
+                    type="text"
+                    class="form-control save-state"
+                    id="full_name"
+                    name="full_name"
+                    placeholder="Ваше полное имя"
+                    value="{{ form.full_name.value|default_if_none:'' }}"
+                    required
+                >
+                {% if form.full_name.errors %}
+                    {% for error in form.full_name.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input
+                    type="text"
+                    class="form-control save-state"
+                    id="phone"
+                    name="phone"
+                    placeholder="+7 (___) ___-__-__"
+                    value="{{ form.phone.value|default_if_none:'' }}"
+                    required
+                >
+                {% if form.phone.errors %}
+                    {% for error in form.phone.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="password1">Пароль</label>
+                <div class="input-group">
+                    <input
+                        type="password"
+                        class="form-control password-input"
+                        id="password1"
+                        name="password1"
+                        placeholder="Пароль"
+                        required
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword('password1', this)">
+                        <img src="{% static 'image/hidden.png' %}" alt="Показать пароль" width="18" height="18">
+                    </button>
+                </div>
+                {% if form.password1.errors %}
+                    {% for error in form.password1.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="password2">Повторите пароль</label>
+                <div class="input-group">
+                    <input
+                        type="password"
+                        class="form-control password-input"
+                        id="password2"
+                        name="password2"
+                        placeholder="Повторите пароль"
+                        required
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword('password2', this)">
+                        <img src="{% static 'image/hidden.png' %}" alt="Показать пароль" width="18" height="18">
+                    </button>
+                </div>
+                {% if form.password2.errors %}
+                    {% for error in form.password2.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <button type="submit" class="submit-btn">Зарегистрироваться</button>
+        </form>
+
+        <div class="switch-form">
+            Уже есть аккаунт?
+            <a href="{% url 'login' %}">Войти</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const STATIC_HIDDEN = "{% static 'image/hidden.png' %}";
+        const STATIC_EYE = "{% static 'image/eye.png' %}";
+
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                button.innerHTML = `<img src="${STATIC_EYE}" alt="Скрыть пароль" width="18" height="18">`;
+            } else {
+                input.type = "password";
+                button.innerHTML = `<img src="${STATIC_HIDDEN}" alt="Показать пароль" width="18" height="18">`;
+            }
+        }
+
+        // --- Код для сохранения состояния полей ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const storageKeyPrefix = 'register_form_';
+            const inputsToSave = document.querySelectorAll('.save-state');
+            const form = document.getElementById('register-form');
+
+            // Восстановление данных из sessionStorage при загрузке страницы
+            inputsToSave.forEach(input => {
+                const savedValue = sessionStorage.getItem(storageKeyPrefix + input.id);
+                // Заполняем поле из хранилища только в том случае, если Django не прислал новое значение формы (value пустое)
+                if (savedValue && !input.value) {
+                    input.value = savedValue;
+                }
+
+                // Сохранение изменений в sessionStorage при вводе
+                input.addEventListener('input', () => {
+                    sessionStorage.setItem(storageKeyPrefix + input.id, input.value);
+                });
+            });
+
+            // Очистка хранилища при успешной отправке формы
+            if (form) {
+                form.addEventListener('submit', () => {
+                    inputsToSave.forEach(input => {
+                        sessionStorage.removeItem(storageKeyPrefix + input.id);
+                    });
+                });
+            }
+        });
+
+        // Автоматическое форматирование номера телефона при вводе
+        document.addEventListener('DOMContentLoaded', () => {
+            const phoneInput = document.getElementById('phone');
+
+            if (phoneInput) {
+                phoneInput.addEventListener('input', (e) => {
+                    let input = e.target.value.replace(/\D/g, ''); // Удаляем все не-цифры
+                    let formatted = '';
+
+                    // Если ввод пустой, ничего не делаем
+                    if (!input) {
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Проверяем, с чего начинает вводить пользователь
+                    // Если первая цифра 7 или 8, или если в начале стоял плюс (который мы стерли регуляркой, превратив в цифры)
+                    if (e.target.value.startsWith('+')) {
+                        // Если был плюс, значит это скорее всего +7
+                        formatted = '+7 ';
+                    } else if (input[0] === '8') {
+                        formatted = '8 ';
+                    } else if (input[0] === '7') {
+                        formatted = '+7 ';
+                    } else {
+                        // Если начинают вводить без кода (например сразу 9), автоматически подставляем +7
+                        formatted = '+7 ';
+                        input = '7' + input;
+                    }
+
+                    // Форматируем оставшиеся цифры
+                    if (input.length > 1) {
+                        formatted += '(' + input.substring(1, 4);
+                    }
+                    if (input.length >= 5) {
+                        formatted += ') ' + input.substring(4, 7);
+                    }
+                    if (input.length >= 8) {
+                        formatted += '-' + input.substring(7, 9);
+                    }
+                    if (input.length >= 10) {
+                        formatted += '-' + input.substring(9, 11);
+                    }
+
+                    // Ограничиваем длину строки по маске
+                    e.target.value = formatted.substring(0, 18);
+                });
+
+                // Обработка нажатия Backspace, чтобы не застревать на символах маски ) или -
+                phoneInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace') {
+                        const value = e.target.value;
+                        if (value.endsWith(' ') || value.endsWith('-') || value.endsWith('(') || value.endsWith(')')) {
+                            e.preventDefault();
+                            e.target.value = value.substring(0, value.length - 2);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
