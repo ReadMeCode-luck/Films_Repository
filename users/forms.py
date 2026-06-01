@@ -74,3 +74,11 @@ class RegisterForm(UserCreationForm):
 
         formatted_phone = f"{clean_digits[0:2]} ({clean_digits[2:5]}) {clean_digits[5:8]}-{clean_digits[8:10]}-{clean_digits[10:12]}"
         return formatted_phone
+
+
+class ForgotPasswordForm(forms.Form):
+    """Форма для модального окна «Забыли пароль?» на странице входа."""
+    email = forms.EmailField(
+        label='Электронная почта',
+        widget=forms.EmailInput(attrs={'placeholder': 'Электронная почта'}),
+    )

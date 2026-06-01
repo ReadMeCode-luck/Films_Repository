@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib import messages
-from .forms import RegisterForm, LoginForm
+from .forms import RegisterForm, LoginForm, ForgotPasswordForm
+from .services import send_password_reset_email
+from .models import CustomUser
 
 
 def login_view(request):
@@ -36,3 +38,31 @@ def logout_view(request):
     logout(request)
     messages.info(request, 'Вы вышли из аккаунта.')
     return redirect('index')
+
+
+def forgot_password_view(request):
+    """
+    Принимает email из модального окна на странице логина.
+    Если пользователь найден — отправляет письмо через services.py.
+    Всегда редиректит обратно на логин с сообщением (чтобы не раскрывать,
+    есть ли такой email в базе).
+    """
+    if request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = CustomUser.objects.get(email=email)
+                send_password_reset_email(request, user)
+            except CustomUser.DoesNotExist:
+                pass  # не раскрываем, есть ли email в базе
+
+        # Одно сообщение для обоих случаев — безопаснее
+        messages.success(
+            request,
+            'Если этот email зарегистрирован, письмо со ссылкой уже в пути.'
+        )
+        return redirect('login')
+
+    # GET-запрос на этот URL не нужен — редиректим на логин
+    return redirect('login')
