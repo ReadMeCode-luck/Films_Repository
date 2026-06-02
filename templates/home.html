@@ -126,7 +126,7 @@
             <nav class="flex items-center space-x-6 text-sm font-semibold tracking-wide">
                 <a href="#" class="text-white hover:text-brand-pink transition-colors">Главная</a>
                 <a href="{% url 'films' %}" class="text-brand-textGray hover:text-white transition-colors">Фильмы</a>
-                <a href="#series-section" class="text-brand-textGray hover:text-white transition-colors">Мультфильмы</a>
+                <a href="{% url 'cartoons' %}" class="text-brand-textGray hover:text-white transition-colors">Мультфильмы</a>
                 <a href="#" class="text-brand-textGray hover:text-white transition-colors">Актеры</a>
                 <a href="#" class="text-brand-textGray hover:text-white transition-colors">О нас</a>
             </nav>
@@ -177,50 +177,49 @@
 </div>
 {% endif %}
 
-<!-- ГЛАВНЫЙ ГЕРОЙ-БЛОК (HERO SECTION) -->
+<!-- ГЛАВНЫЙ ГЕРОЙ-БЛОК (HERO SECTION) — данные из Slider БД -->
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-16 md:pt-28 flex justify-start items-center">
     <div class="max-w-2xl text-left space-y-6">
 
-        <!-- Хит-бирка -->
         <div class="inline-flex items-center space-x-2 bg-brand-pink/20 border border-brand-pink/40 px-3.5 py-1 rounded-full text-brand-pink text-xs font-bold tracking-wider uppercase">
             <span class="w-2 h-2 rounded-full bg-brand-pink animate-ping"></span>
             <span>Популярно сейчас</span>
         </div>
 
         <div class="space-y-1">
-            <h2 class="movie-title font-heading text-4xl sm:text-6xl font-black tracking-tight leading-tight uppercase text-white">
-                Оппенгеймер 2023
+            <h2 class="slide-title font-heading text-4xl sm:text-6xl font-black tracking-tight leading-tight uppercase text-white">
+                {% if sliders %}{{ sliders.0.title }}{% else %}Синема Сити{% endif %}
             </h2>
         </div>
 
         <div class="space-y-2">
             <h3 class="text-xs font-bold uppercase tracking-widest text-brand-textGray">Синопсис</h3>
-            <p class="plot-text text-sm sm:text-base text-gray-300 leading-relaxed max-w-xl">
-                Фильм «Оппенгеймер» — биографическая драма режиссёра Кристофера Нолана.
-                Сюжет основан на реальных событиях и рассказывает историю жизни Джона Роберта Оппенгеймера,
-                создателя атомной бомбы. Премьера фильма состоялась 21 июля 2023 года.
+            <p class="slide-description text-sm sm:text-base text-gray-300 leading-relaxed max-w-xl">
+                {% if sliders %}{{ sliders.0.description }}{% else %}Лучший выбор фильмов и мультфильмов.{% endif %}
             </p>
         </div>
 
         <div class="flex items-center space-x-6 text-sm">
             <div>
                 <span class="text-xs font-bold text-brand-textGray uppercase block mb-1">Жанр</span>
-                <span class="font-semibold text-white">Исторический, Драма</span>
+                <span class="slide-genre font-semibold text-white">{% if sliders %}{{ sliders.0.genre }}{% endif %}</span>
             </div>
             <div class="w-[1px] h-8 bg-white/10"></div>
             <div>
                 <span class="text-xs font-bold text-brand-textGray uppercase block mb-1">Длительность</span>
-                <span class="font-semibold text-white"><i class="fa-regular fa-clock text-brand-pink mr-1.5"></i>3 часа</span>
+                <span class="slide-duration font-semibold text-white">
+                    <i class="fa-regular fa-clock text-brand-pink mr-1.5"></i>
+                    {% if sliders %}{{ sliders.0.duration_display }}{% endif %}
+                </span>
             </div>
             <div class="w-[1px] h-8 bg-white/10"></div>
             <div>
                 <span class="text-xs font-bold text-brand-textGray uppercase block mb-1">Рейтинг</span>
                 <span class="bg-yellow-500 text-black font-extrabold text-[11px] px-2 py-0.5 rounded mr-1">IMDb</span>
-                <strong class="text-white">8.3<span class="text-gray-500 font-normal">/10</span></strong>
+                <strong class="slide-rating text-white">{% if sliders %}{{ sliders.0.rating }}{% endif %}<span class="text-gray-500 font-normal">/10</span></strong>
             </div>
         </div>
 
-        <!-- Кнопки действий -->
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
             <a href="#" class="bg-brand-pink hover:bg-brand-pinkHover text-white font-extrabold px-8 py-4 rounded-2xl transition-all shadow-lg hover:shadow-brand-pink/30 text-center flex items-center justify-center space-x-3">
                 <i class="fa-solid fa-circle-play text-lg"></i>
@@ -236,13 +235,12 @@
         <button class="w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:border-brand-pink hover:text-brand-pink text-white flex items-center justify-center transition-all" id="prev-slide">
             <i class="fa-solid fa-chevron-left"></i>
         </button>
-        <div class="flex items-center space-x-2.5">
-            <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all active" data-index="0"></span>
-            <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="1"></span>
-            <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="2"></span>
-            <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="3"></span>
-            <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="4"></span>
-            <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="5"></span>
+        <div class="flex items-center space-x-2.5" id="dots-container">
+            {% for slide in sliders %}
+            <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="{{ forloop.counter0 }}"></span>
+            {% empty %}
+            <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="0"></span>
+            {% endfor %}
         </div>
         <button class="w-10 h-10 rounded-full bg-white/5 border border-white/10 hover:border-brand-pink hover:text-brand-pink text-white flex items-center justify-center transition-all" id="next-slide">
             <i class="fa-solid fa-chevron-right"></i>
@@ -253,147 +251,116 @@
 <!-- БЛОК ПОИСКА И ФИЛЬТРОВ -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-6">
 
-    <!-- Простой поиск -->
-    <div class="bg-brand-cardBg/60 border border-brand-border/40 p-5 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 backdrop-blur-md">
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:max-w-2xl">
-            <button class="bg-brand-pink hover:bg-brand-pinkHover text-white font-bold px-6 py-3.5 rounded-2xl transition-all shadow-md shrink-0 flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <span>Искать</span>
-            </button>
-            <input type="text" placeholder="Введите название фильма, сериала или анимации..." class="w-full bg-brand-darkBg/80 border border-brand-border text-white text-sm placeholder-gray-500 rounded-2xl px-5 py-3.5 focus:border-brand-pink focus:outline-none transition-all">
-        </div>
-        <div class="text-right shrink-0">
-            <h3 class="font-heading font-bold text-sm text-white">Простой поиск фильмов</h3>
-            <p class="text-xs text-brand-textGray mt-0.5">База данных обновляется ежедневно</p>
-        </div>
-    </div>
-
-    <!-- Расширенный поиск -->
-    <div class="bg-brand-cardBg/60 border border-brand-border/40 rounded-3xl overflow-hidden backdrop-blur-md">
-        <div class="flex justify-between items-center px-6 py-5 border-b border-brand-border/40">
+    <!-- Функциональный фильтр (отправляет на /films/ или /cartoons/) -->
+    <div class="bg-brand-cardBg/60 border border-brand-border/40 rounded-2xl p-5 backdrop-blur-md" id="home-filter-block">
+        <div class="flex items-center justify-between mb-4">
             <span class="text-sm font-heading font-black text-white tracking-wider flex items-center space-x-2">
                 <i class="fa-solid fa-sliders text-brand-pink"></i>
-                <span>РАСШИРЕННЫЙ ФИЛЬТР РЕЛИЗОВ</span>
+                <span>ФИЛЬТР</span>
             </span>
-            <span class="toggle-icon text-brand-pink cursor-pointer text-sm w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all">▲</span>
-        </div>
-
-        <div class="p-6 space-y-6" id="advanced-filters-content">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                <!-- Элемент фильтра -->
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Тип</label>
-                    <select class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none cursor-pointer">
-                        <option>Все типы</option>
-                        <option>Фильмы</option>
-                        <option>Мультфильмы</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Жанр</label>
-                    <select class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none cursor-pointer">
-                        <option>Все жанры</option>
-                        <option>Драма</option>
-                        <option>Боевик</option>
-                        <option>Биография</option>
-                        <option>Фантастика</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Год выпуска (От)</label>
-                    <select class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none cursor-pointer">
-                        <option>Не выбрано</option>
-                        <option>2024</option>
-                        <option>2023</option>
-                        <option>2022</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Год выпуска (До)</label>
-                    <select class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none cursor-pointer">
-                        <option>Не выбрано</option>
-                        <option>2024</option>
-                        <option>2023</option>
-                        <option>2022</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Страна</label>
-                    <select class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none cursor-pointer">
-                        <option>Все страны</option>
-                        <option>США</option>
-                        <option>Великобритания</option>
-                        <option>Франция</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Качество</label>
-                    <select class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none cursor-pointer">
-                        <option>Любое качество</option>
-                        <option>UltraHD 4K</option>
-                        <option>FullHD 1080p</option>
-                        <option>HD 720p</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Актеры</label>
-                    <input type="text" placeholder="Например: Брэд Питт" class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none">
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Режиссер</label>
-                    <input type="text" placeholder="Например: Кристофер Нолан" class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none">
-                </div>
-
-                <div class="flex flex-col space-y-2">
-                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Сортировка по рейтингу</label>
-                    <select class="bg-brand-darkBg/80 border border-brand-border text-white text-sm rounded-xl p-3 focus:border-brand-pink focus:outline-none cursor-pointer">
-                        <option>По популярности</option>
-                        <option>Сначала высокие оценки</option>
-                        <option>Сначала новые</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Нижняя панель расширенного фильтра -->
-            <div class="border-t border-brand-border/40 pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button class="w-full sm:w-auto bg-brand-pink hover:bg-brand-pinkHover text-white font-extrabold px-8 py-3.5 rounded-2xl transition-all shadow-md flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-filter"></i>
-                    <span>Применить фильтр и искать</span>
+            <!-- Переключатель: Фильмы / Мультфильмы -->
+            <div class="flex items-center gap-2 bg-white/5 rounded-xl p-1">
+                <button id="filter-tab-films"
+                    onclick="setFilterType('films')"
+                    class="filter-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-brand-pink text-white">
+                    Фильмы
                 </button>
-
-                <div class="flex items-center space-x-6">
-                    <label class="custom-checkbox flex items-center space-x-2.5 cursor-pointer text-sm text-gray-300 hover:text-white select-none">
-                        <input type="checkbox">
-                        <span class="checkbox-indicator w-5 h-5 rounded-lg border-2 border-brand-border flex items-center justify-center transition-all bg-brand-darkBg">
-                            <i class="fa-solid fa-check text-xs text-brand-pink hidden"></i>
-                        </span>
-                        <span>Субтитры</span>
-                    </label>
-
-                    <label class="custom-checkbox flex items-center space-x-2.5 cursor-pointer text-sm text-gray-300 hover:text-white select-none">
-                        <input type="checkbox" checked>
-                        <span class="checkbox-indicator w-5 h-5 rounded-lg border-2 border-brand-pink flex items-center justify-center transition-all bg-brand-darkBg">
-                            <i class="fa-solid fa-check text-xs text-brand-pink"></i>
-                        </span>
-                        <span>Дубляж</span>
-                    </label>
-                </div>
+                <button id="filter-tab-cartoons"
+                    onclick="setFilterType('cartoons')"
+                    class="filter-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-brand-textGray hover:text-white">
+                    Мультфильмы
+                </button>
             </div>
         </div>
+
+        <form method="GET" id="home-filter-form" action="{% url 'films' %}">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+
+                <!-- Жанр -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Жанр</label>
+                    <select name="genre" class="rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-brand-pink transition-colors bg-brand-darkBg/80 border border-brand-border text-white cursor-pointer">
+                        <option value="">Все жанры</option>
+                        {% for val, label in genre_choices %}
+                            <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Страна -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Страна</label>
+                    <select name="country" class="rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-brand-pink transition-colors bg-brand-darkBg/80 border border-brand-border text-white cursor-pointer">
+                        <option value="">Все страны</option>
+                        {% for val, label in country_choices %}
+                            <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Год от -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Год (от)</label>
+                    <select name="year_from" class="rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-brand-pink transition-colors bg-brand-darkBg/80 border border-brand-border text-white cursor-pointer">
+                        <option value="">Не выбрано</option>
+                        {% for y in years %}
+                            <option value="{{ y }}">{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Год до -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Год (до)</label>
+                    <select name="year_to" class="rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-brand-pink transition-colors bg-brand-darkBg/80 border border-brand-border text-white cursor-pointer">
+                        <option value="">Не выбрано</option>
+                        {% for y in years %}
+                            <option value="{{ y }}">{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Качество -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Качество</label>
+                    <select name="quality" class="rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-brand-pink transition-colors bg-brand-darkBg/80 border border-brand-border text-white cursor-pointer">
+                        <option value="">Любое</option>
+                        <option value="HD">HD</option>
+                        <option value="Full HD">Full HD</option>
+                        <option value="4K">4K</option>
+                        <option value="CAM">CAM</option>
+                    </select>
+                </div>
+
+                <!-- Сортировка -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-brand-textGray uppercase tracking-wider">Сортировка</label>
+                    <select name="sort" class="rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-brand-pink transition-colors bg-brand-darkBg/80 border border-brand-border text-white cursor-pointer">
+                        <option value="-rating">Рейтинг ↓</option>
+                        <option value="rating">Рейтинг ↑</option>
+                        <option value="-year">Новинки</option>
+                        <option value="year">Старые</option>
+                        <option value="title">А → Я</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between gap-4">
+                <button type="submit"
+                    class="bg-brand-pink hover:bg-brand-pinkHover text-white font-extrabold px-8 py-3 rounded-xl transition-all shadow-md flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Найти</span>
+                </button>
+                <p class="text-xs text-brand-textGray hidden sm:block">Результаты откроются на странице каталога</p>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- КАТАЛОГ СЕКЦИИ -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-16 space-y-16">
 
-    <!-- СЕКЦИЯ 1: РЕКОМЕНДУЕМЫЕ ФИЛЬМЫ -->
+    <!-- СЕКЦИЯ 1: РЕКОМЕНДУЕМЫЕ ФИЛЬМЫ (из БД) -->
     <section class="space-y-6" id="movies-section">
         <div class="flex justify-between items-center">
             <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white tracking-tight flex items-center space-x-3">
@@ -412,24 +379,28 @@
 
         <div class="movie-slider-wrapper overflow-hidden w-full">
             <div class="movie-grid movie-track">
-
-                <!-- Карточка 1 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
+                {% for item in featured_films %}
+                {% with film=item.film %}
+                <a href="{% url 'film_detail' film.slug %}" class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
                     <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <!-- Оверлей при наведении -->
+                        {% if film.poster %}
+                            <img src="{{ film.poster.url }}" alt="{{ film.title }}" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        {% else %}
+                            <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-brand-cardBg to-[#0a0a0f]">
+                                <i class="fa-solid fa-film text-brand-border text-4xl mb-2"></i>
+                            </div>
+                        {% endif %}
                         <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
                             <div class="space-y-2">
                                 <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">Захватывающая музыкальная драма о поиске себя, творческом кризисе и мечтах молодого драматурга.</p>
+                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">{{ film.description }}</p>
                             </div>
                             <div class="space-y-3">
                                 <div>
                                     <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Мюзикл, Драма</p>
+                                    <p class="text-xs text-white font-medium">{{ film.genre }}</p>
                                 </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">PG-13</span>
+                                <div class="flex items-center justify-end">
                                     <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
                                 </div>
                             </div>
@@ -437,173 +408,26 @@
                     </div>
                     <div>
                         <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 1ч 55м</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>7.5</span>
+                            <span>⏱ {{ film.duration_display }}</span>
+                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>{{ film.rating }}</span>
                         </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">Tick Tick... Boom 2021</h3>
+                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">{{ film.title }} {{ film.year }}</h3>
                     </div>
-                </div>
-
-                <!-- Карточка 2 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">Продолжение культовой шпионской франшизы с невероятными практическими трюками.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Боевик, Триллер</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">PG-13</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 2ч 43м</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>7.6</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">Mission Impossible</h3>
-                    </div>
-                </div>
-
-                <!-- Карточка 3 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">Эпическая криминальная драма Мартина Скорсезе о серии загадочных убийств в индейской резервации.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Драма, Криминал</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">R</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 3ч 26м</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>8.1</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">Killers Of The Flower Moon</h3>
-                    </div>
-                </div>
-
-                <!-- Карточка 4 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">Возвращение на прекрасную Пандору. Салли и Нейтири защищают свою семью от новой угрозы.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Фантастика, Боевик</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">PG-13</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 3ч 12м</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>7.7</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">Avatar The Way Of Water</h3>
-                    </div>
-                </div>
-
-                <!-- Карточка 5 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="{% static 'image/1.svg' %}" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">История жизни Роберта Оппенгеймера, руководителя секретного Манхэттенского проекта.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Биография, Драма</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">R</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 3ч 00м</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>8.3</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">Oppenheimer 2023</h3>
-                    </div>
-                </div>
-
-                <!-- Карточка 6 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">Культовый научно-фантастический шедевр Кристофера Нолана о путешествиях сквозь кротовые норы ради спасения цивилизации.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Фантастика, Драма</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">PG-13</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 2ч 49м</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>8.6</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">Интерстеллар</h3>
-                    </div>
-                </div>
-
+                </a>
+                {% endwith %}
+                {% empty %}
+                <p class="text-brand-textGray text-sm">Рекомендуемые фильмы не добавлены.</p>
+                {% endfor %}
             </div>
         </div>
         <div class="flex justify-center pt-4">
-            <button class="bg-transparent border border-brand-pink/30 hover:bg-brand-pink hover:border-brand-pink text-brand-pink hover:text-white font-extrabold px-8 py-3 rounded-xl transition-all duration-300 text-sm">
-                Показать еще
-            </button>
+            <a href="{% url 'films' %}" class="bg-transparent border border-brand-pink/30 hover:bg-brand-pink hover:border-brand-pink text-brand-pink hover:text-white font-extrabold px-8 py-3 rounded-xl transition-all duration-300 text-sm">
+                Показать ещё
+            </a>
         </div>
     </section>
 
-    <!-- СЕКЦИЯ 2: РЕКОМЕНДУЕМЫЕ МУЛЬТФИЛЬМЫ -->
+    <!-- СЕКЦИЯ 2: РЕКОМЕНДУЕМЫЕ МУЛЬТФИЛЬМЫ (из БД) -->
     <section class="space-y-6" id="series-section">
         <div class="flex justify-between items-center">
             <h2 class="font-heading font-extrabold text-xl sm:text-2xl text-white tracking-tight flex items-center space-x-3">
@@ -622,23 +446,28 @@
 
         <div class="movie-slider-wrapper overflow-hidden w-full">
             <div class="movie-grid movie-track">
-
-                <!-- Сериал 1 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
+                {% for item in featured_cartoons %}
+                {% with film=item.film %}
+                <a href="{% url 'film_detail' film.slug %}" class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
                     <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1542204172-e7052809a520?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        {% if film.poster %}
+                            <img src="{{ film.poster.url }}" alt="{{ film.title }}" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        {% else %}
+                            <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-brand-cardBg to-[#0a0a0f]">
+                                <i class="fa-solid fa-film text-brand-border text-4xl mb-2"></i>
+                            </div>
+                        {% endif %}
                         <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
                             <div class="space-y-2">
                                 <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">История бесстрашного бывшего военного полицейского Джека Ричера, раскрывающего заговоры.</p>
+                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">{{ film.description }}</p>
                             </div>
                             <div class="space-y-3">
                                 <div>
                                     <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Боевик, Криминал</p>
+                                    <p class="text-xs text-white font-medium">{{ film.genre }}</p>
                                 </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">R</span>
+                                <div class="flex items-center justify-end">
                                     <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
                                 </div>
                             </div>
@@ -646,139 +475,22 @@
                     </div>
                     <div>
                         <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 45 мин</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>8.1</span>
+                            <span>⏱ {{ film.duration_display }}</span>
+                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>{{ film.rating }}</span>
                         </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">Reacher</h3>
+                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">{{ film.title }} {{ film.year }}</h3>
                     </div>
-                </div>
-
-                <!-- Сериал 2 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">История интриг, расцвета и начала конца великого Дома Таргариенов.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Фэнтези, Драма</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">TV-MA</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 60 мин</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>8.3</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">House Of The Dragon</h3>
-                    </div>
-                </div>
-
-                <!-- Сериал 3 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">Эпическое триумфальное возвращение во Вторую эпоху легендарного Средиземья.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Фэнтези, Приключения</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">PG-13</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 1 час</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>7.0</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">The Lord Of The Rings</h3>
-                    </div>
-                </div>
-
-                <!-- Сериал 4 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">Выживший Джоэл и юная Элли пробираются через руины цивилизации, охваченной эпидемией.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Драма, Фантастика</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">TV-MA</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 50 мин</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>8.8</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">The Last Of Us</h3>
-                    </div>
-                </div>
-
-                <!-- Сериал 5 -->
-                <div class="movie-card min-w-[calc(50%-10px)] sm:min-w-[calc(33.33%-14px)] md:min-w-[calc(25%-15px)] lg:min-w-[calc(20%-16px)] group flex flex-col space-y-3 cursor-pointer">
-                    <div class="card-poster-wrapper relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
-                        <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=400" alt="Постер" class="card-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-brand-darkBg/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col justify-between p-4 transition-all duration-300">
-                            <div class="space-y-2">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-brand-pink">Синопсис</h4>
-                                <p class="text-xs text-gray-300 leading-relaxed line-clamp-5">Масштабный документальный блокбастер от легендарного Дэвида Аттенборо об экосистемах Земли.</p>
-                            </div>
-                            <div class="space-y-3">
-                                <div>
-                                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-brand-textGray mb-0.5">Жанр</h4>
-                                    <p class="text-xs text-white font-medium">Документальный</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="bg-brand-pink/20 text-brand-pink text-[10px] font-bold px-2 py-0.5 rounded">TV-G</span>
-                                    <span class="w-8 h-8 rounded-full bg-brand-pink text-white flex items-center justify-center text-xs"><i class="fa-solid fa-play ml-0.5"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs text-brand-textGray">
-                            <span>⏱ 50 мин</span>
-                            <span class="text-yellow-500 font-bold"><i class="fa-solid fa-star mr-1"></i>9.3</span>
-                        </div>
-                        <h3 class="card-title font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate mt-1">Planet Earth III</h3>
-                    </div>
-                </div>
-
+                </a>
+                {% endwith %}
+                {% empty %}
+                <p class="text-brand-textGray text-sm">Рекомендуемые мультфильмы не добавлены.</p>
+                {% endfor %}
             </div>
         </div>
         <div class="flex justify-center pt-4">
-            <button class="bg-transparent border border-brand-pink/30 hover:bg-brand-pink hover:border-brand-pink text-brand-pink hover:text-white font-extrabold px-8 py-3 rounded-xl transition-all duration-300 text-sm">
-                Показать еще
-            </button>
+            <a href="{% url 'cartoons' %}" class="bg-transparent border border-brand-pink/30 hover:bg-brand-pink hover:border-brand-pink text-brand-pink hover:text-white font-extrabold px-8 py-3 rounded-xl transition-all duration-300 text-sm">
+                Показать ещё
+            </a>
         </div>
     </section>
 
@@ -939,87 +651,89 @@
     initCatalogSlider('movies-section');
     initCatalogSlider('series-section');
 
-    // База данных слайдов для Hero секции
-    const slidesData = [
-        {title: "Oppenheimer 2023", subtitle: "Оппенгеймер", bg: `url('{% static "image/1.svg" %}')`},
-        {title: "Inception 2010", subtitle: "Начало", bg: "url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1200')"},
-        {title: "Interstellar 2014", subtitle: "Интерстеллар", bg: "url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1200')"},
-        {title: "The Dark Knight 2008", subtitle: "Темный рыцарь", bg: "url('https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&q=80&w=1200')"},
-        {title: "Dunkirk 2017", subtitle: "Дюнкерк", bg: "url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200')"},
-        {title: "Tenet 2020", subtitle: "Довод", bg: "url('https://images.unsplash.com/photo-1542204172-e7052809a520?auto=format&fit=crop&q=80&w=1200')"}
+    // Данные слайдов из Django (Slider модель)
+    const slidesDataFixed = [
+        {% for slide in sliders %}
+        {
+            title: "{{ slide.title|escapejs }}",
+            description: "{{ slide.description|escapejs }}",
+            genre: "{{ slide.genre|escapejs }}",
+            duration: "{{ slide.duration_display|escapejs }}",
+            rating: "{{ slide.rating }}",
+            bg: "url('{{ slide.image.url }}')"
+        }{% if not forloop.last %},{% endif %}
+        {% empty %}
+        {title: "Синема Сити", description: "Лучший онлайн-кинотеатр.", genre: "", duration: "", rating: "", bg: ""}
+        {% endfor %}
     ];
 
     let currentIdx = 0;
     const dots = document.querySelectorAll('.dot');
-    const titleEl = document.querySelector('.movie-title');
-    const subtitleEl = document.querySelector('.movie-subtitle');
-    const bgEl = document.querySelector('.hero-background');
+    const titleEl  = document.querySelector('.slide-title');
+    const descEl   = document.querySelector('.slide-description');
+    const genreEl  = document.querySelector('.slide-genre');
+    const durEl    = document.querySelector('.slide-duration');
+    const ratingEl = document.querySelector('.slide-rating');
+    const bgEl     = document.querySelector('.hero-background');
 
     function updateSlider(index) {
         dots.forEach(dot => {
             dot.classList.remove('bg-brand-pink', 'w-4', 'shadow-[0_0_8px_#FF1E56]');
             dot.classList.add('bg-white/20', 'w-2');
         });
+        if (dots[index]) {
+            dots[index].classList.remove('bg-white/20', 'w-2');
+            dots[index].classList.add('bg-brand-pink', 'w-4', 'shadow-[0_0_8px_#FF1E56]');
+        }
 
-        dots[index].classList.remove('bg-white/20', 'w-2');
-        dots[index].classList.add('bg-brand-pink', 'w-4', 'shadow-[0_0_8px_#FF1E56]');
-
-        titleEl.textContent = slidesData[index].title;
-        subtitleEl.textContent = slidesData[index].subtitle;
-        bgEl.style.background = `radial-gradient(circle at 30% 40%, rgba(8, 8, 10, 0.1) 0%, rgba(8, 8, 10, 0.98) 85%), ${slidesData[index].bg} no-repeat center top`;
-        bgEl.style.backgroundSize = 'cover';
-
+        const s = slidesDataFixed[index];
+        if (titleEl)  titleEl.textContent  = s.title;
+        if (descEl)   descEl.textContent   = s.description;
+        if (genreEl)  genreEl.textContent  = s.genre;
+        if (durEl)    durEl.innerHTML      = `<i class="fa-regular fa-clock text-brand-pink mr-1.5"></i>${s.duration}`;
+        if (ratingEl) ratingEl.innerHTML   = `${s.rating}<span class="text-gray-500 font-normal">/10</span>`;
+        if (bgEl && s.bg !== "url('')") {
+            bgEl.style.background = `radial-gradient(circle at 30% 40%, rgba(8,8,10,0.1) 0%, rgba(8,8,10,0.98) 85%), ${s.bg} no-repeat center top`;
+            bgEl.style.backgroundSize = 'cover';
+        }
         currentIdx = index;
     }
 
-    document.getElementById('next-slide').addEventListener('click', () => {
-        let next = (currentIdx + 1) % slidesData.length;
-        updateSlider(next);
-    });
+    // ── Переключатель Фильмы / Мультфильмы в фильтре ──────────────────────────
+    const filmsUrl    = "{% url 'films' %}";
+    const cartoonsUrl = "{% url 'cartoons' %}";
 
-    document.getElementById('prev-slide').addEventListener('click', () => {
-        let prev = (currentIdx - 1 + slidesData.length) % slidesData.length;
-        updateSlider(prev);
-    });
+    function setFilterType(type) {
+        const form      = document.getElementById('home-filter-form');
+        const tabFilms  = document.getElementById('filter-tab-films');
+        const tabCarts  = document.getElementById('filter-tab-cartoons');
 
-    dots.forEach((dot, i) => {
-        dot.addEventListener('click', () => updateSlider(i));
-    });
-
-    // Инициализация первого слайда
-    updateSlider(0);
-
-    // Сворачивание / Разворачивание расширенного фильтра
-    const toggleIcon = document.querySelector('.toggle-icon');
-    const advancedContent = document.getElementById('advanced-filters-content');
-
-    toggleIcon.addEventListener('click', () => {
-        if (advancedContent.classList.contains('hidden')) {
-            advancedContent.classList.remove('hidden');
-            toggleIcon.innerText = '▲';
+        if (type === 'films') {
+            form.action = filmsUrl;
+            tabFilms.classList.add('bg-brand-pink', 'text-white');
+            tabFilms.classList.remove('text-brand-textGray');
+            tabCarts.classList.remove('bg-brand-pink', 'text-white');
+            tabCarts.classList.add('text-brand-textGray');
         } else {
-            advancedContent.classList.add('hidden');
-            toggleIcon.innerText = '▼';
+            form.action = cartoonsUrl;
+            tabCarts.classList.add('bg-brand-pink', 'text-white');
+            tabCarts.classList.remove('text-brand-textGray');
+            tabFilms.classList.remove('bg-brand-pink', 'text-white');
+            tabFilms.classList.add('text-brand-textGray');
         }
-    });
+    }
 
-    // Кастомный обработчик для красивых чекбоксов
-    const checkboxes = document.querySelectorAll('.custom-checkbox input');
-    checkboxes.forEach(chk => {
-        chk.addEventListener('change', (e) => {
-            const indicator = e.target.nextElementSibling;
-            const icon = indicator.querySelector('i');
-            if (e.target.checked) {
-                indicator.classList.remove('border-brand-border');
-                indicator.classList.add('border-brand-pink');
-                icon.classList.remove('hidden');
-            } else {
-                indicator.classList.add('border-brand-border');
-                indicator.classList.remove('border-brand-pink');
-                icon.classList.add('hidden');
-            }
+    if (slidesDataFixed.length > 0) {
+        document.getElementById('next-slide').addEventListener('click', () => {
+            updateSlider((currentIdx + 1) % slidesDataFixed.length);
         });
-    });
+        document.getElementById('prev-slide').addEventListener('click', () => {
+            updateSlider((currentIdx - 1 + slidesDataFixed.length) % slidesDataFixed.length);
+        });
+        dots.forEach((dot, i) => dot.addEventListener('click', () => updateSlider(i)));
+        updateSlider(0);
+    }
+
 </script>
 </body>
 </html>

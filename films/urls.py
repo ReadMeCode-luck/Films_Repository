@@ -8,6 +8,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('', views.index, name='index'),
     path('films/', views.films_page, name='films'),
+    path('cartoons/', views.cartoons_page, name='cartoons'),
     path('films/<slug:slug>/', views.film_detail, name='film_detail'),
     path('profile/', include('users.urls')),
     path('api/films/', views.FilmList.as_view(), name='film-list'),

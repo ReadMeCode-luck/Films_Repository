@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Фильмы — Синема Сити</title>
+    <title>Мультфильмы — Синема Сити</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -57,16 +57,6 @@
             font-weight: 700;
         }
 
-        .filter-tag {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .filter-tag:hover, .filter-tag.active {
-            background-color: #FF1E56;
-            border-color: #FF1E56;
-            color: #fff;
-        }
-
         input[type="search"]::-webkit-search-cancel-button { display: none; }
     </style>
 </head>
@@ -87,25 +77,27 @@
 
         <nav class="hidden md:flex items-center space-x-6 text-sm font-semibold">
             <a href="{% url 'index' %}" class="text-brand-textGray hover:text-white transition-colors">Главная</a>
-            <a href="{% url 'films' %}" class="{% if page_type == 'films' %}text-white border-b-2 border-brand-pink pb-0.5{% else %}text-brand-textGray hover:text-white transition-colors{% endif %}">Фильмы</a>
-            <a href="{% url 'cartoons' %}" class="{% if page_type == 'cartoons' %}text-white border-b-2 border-brand-pink pb-0.5{% else %}text-brand-textGray hover:text-white transition-colors{% endif %}">Мультфильмы</a>
+            <a href="{% url 'films' %}" class="text-brand-textGray hover:text-white transition-colors">Фильмы</a>
+            <a href="{% url 'cartoons' %}" class="text-white border-b-2 border-brand-pink pb-0.5">Мультфильмы</a>
             <a href="#" class="text-brand-textGray hover:text-white transition-colors">Актёры</a>
             <a href="#" class="text-brand-textGray hover:text-white transition-colors">О нас</a>
         </nav>
 
         <div class="flex items-center gap-3">
-            <!-- Поиск -->
-            <form method="GET" action="{% url 'films' %}" class="relative hidden sm:block">
+            <form method="GET" action="{% url 'cartoons' %}" class="relative hidden sm:block">
                 <input
                     type="search" name="q"
                     value="{{ search_query }}"
-                    placeholder="Быстрый поиск..."
+                    placeholder="Поиск мультфильмов..."
                     class="bg-brand-cardBg border border-brand-border rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-brand-textGray focus:outline-none focus:border-brand-pink w-48 transition-all focus:w-64"
                 >
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-brand-textGray text-xs"></i>
             </form>
             {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
+                <form method="post" action="{% url 'logout' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</button>
+                </form>
             {% else %}
                 <a href="{% url 'login' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Вход
@@ -121,13 +113,13 @@
     <!-- Заголовок -->
     <div class="mb-6">
         <h2 class="font-heading font-black text-2xl text-white">
-            <span class="text-brand-pink">|</span> {% if page_type == 'cartoons' %}Каталог мультфильмов{% else %}Каталог фильмов{% endif %}
+            <span class="text-brand-pink">|</span> Каталог мультфильмов
         </h2>
         <p class="text-brand-textGray text-sm mt-1">Найдено: <span class="text-white font-semibold">{{ total_count }}</span></p>
     </div>
 
     <!-- ФИЛЬТРЫ -->
-    <form method="GET" action="" id="filter-form">
+    <form method="GET" action="{% url 'cartoons' %}" id="filter-form">
         {% if search_query %}
             <input type="hidden" name="q" value="{{ search_query }}">
         {% endif %}
@@ -205,10 +197,9 @@
                 </div>
             </div>
 
-            <!-- Сброс фильтров -->
             {% if genre_filter or country_filter or quality_filter or search_query or year_from or year_to %}
             <div class="mt-4 flex justify-end">
-                <a href="" class="text-xs text-brand-textGray hover:text-brand-pink transition-colors flex items-center gap-1.5">
+                <a href="{% url 'cartoons' %}" class="text-xs text-brand-textGray hover:text-brand-pink transition-colors flex items-center gap-1.5">
                     <i class="fa-solid fa-rotate-left"></i> Сбросить фильтры
                 </a>
             </div>
@@ -216,7 +207,57 @@
         </div>
     </form>
 
-    <!-- СЕТКА КАРТОЧЕК -->
+    <!-- РЕКОМЕНДУЕМЫЕ МУЛЬТФИЛЬМЫ -->
+    {% if featured_cartoons %}
+    <section class="mb-10 space-y-4">
+        <h2 class="font-heading font-extrabold text-xl text-white tracking-tight flex items-center space-x-3">
+            <span class="w-1.5 h-6 rounded bg-brand-pink inline-block"></span>
+            <span>Рекомендуемые мультфильмы</span>
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+            {% for item in featured_cartoons %}
+            {% with film=item.film %}
+            <a href="{% url 'film_detail' film.slug %}" class="film-card group flex flex-col cursor-pointer">
+                <div class="relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-brand-cardBg border border-brand-border group-hover:border-brand-pink transition-all duration-300">
+                    {% if film.poster %}
+                        <img src="{{ film.poster.url }}" alt="{{ film.title }}"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+                    {% else %}
+                        <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-brand-cardBg to-[#0a0a0f]">
+                            <i class="fa-solid fa-film text-brand-border text-4xl mb-2"></i>
+                            <span class="text-brand-textGray text-xs">Нет постера</span>
+                        </div>
+                    {% endif %}
+                    <div class="card-overlay absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-3">
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <i class="fa-solid fa-clock text-brand-textGray text-xs"></i>
+                            <span class="text-brand-textGray text-xs">{{ film.duration_display }}</span>
+                        </div>
+                        <span class="inline-block bg-brand-pink/20 border border-brand-pink/40 text-brand-pink text-xs font-semibold px-2 py-0.5 rounded-md w-fit">{{ film.quality }}</span>
+                    </div>
+                    <div class="absolute top-2.5 right-2.5 rating-badge text-white text-xs px-2 py-0.5 rounded-md">★ {{ film.rating }}</div>
+                </div>
+                <div class="mt-2.5 px-0.5">
+                    <h3 class="font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate leading-tight">{{ film.title }}</h3>
+                    {% if film.description %}
+                        <p class="text-brand-textGray text-xs mt-1 leading-snug line-clamp-2">{{ film.description }}</p>
+                    {% endif %}
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-brand-textGray text-xs">{{ film.year }}</span>
+                        {% if film.genre %}
+                            <span class="text-brand-textGray text-xs truncate ml-2 max-w-[80px] text-right">{{ film.genre }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endwith %}
+            {% endfor %}
+        </div>
+        <div class="border-t border-brand-border/20 pt-6"></div>
+    </section>
+    {% endif %}
+
+    <!-- КАТАЛОГ МУЛЬТФИЛЬМОВ -->
     {% if films %}
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-5">
         {% for film in films %}
@@ -232,7 +273,6 @@
                         loading="lazy"
                     >
                 {% else %}
-                    <!-- Заглушка если нет постера -->
                     <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-brand-cardBg to-[#0a0a0f]">
                         <i class="fa-solid fa-film text-brand-border text-4xl mb-2"></i>
                         <span class="text-brand-textGray text-xs">Нет постера</span>
@@ -250,13 +290,13 @@
                     </span>
                 </div>
 
-                <!-- Рейтинг — всегда виден -->
+                <!-- Рейтинг -->
                 <div class="absolute top-2.5 right-2.5 rating-badge text-white text-xs px-2 py-0.5 rounded-md">
                     ★ {{ film.rating }}
                 </div>
             </div>
 
-            <!-- Подпись под карточкой -->
+            <!-- Подпись -->
             <div class="mt-2.5 px-0.5">
                 <h3 class="font-bold text-sm text-white group-hover:text-brand-pink transition-colors truncate leading-tight">
                     {{ film.title }}
@@ -283,7 +323,7 @@
         <i class="fa-solid fa-circle-xmark text-brand-border text-6xl mb-5"></i>
         <h3 class="text-xl font-bold text-white mb-2">Ничего не найдено</h3>
         <p class="text-brand-textGray text-sm mb-6">Попробуйте изменить фильтры или поисковый запрос</p>
-        <a href="{% url 'films' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors">
+        <a href="{% url 'cartoons' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-6 py-2.5 rounded-lg transition-colors">
             Сбросить фильтры
         </a>
     </div>
@@ -294,7 +334,7 @@
 <!-- ПОДВАЛ -->
 <footer class="mt-16 border-t border-brand-border/40 py-8">
     <div class="max-w-7xl mx-auto px-4 text-center text-brand-textGray text-sm">
-        © 2025 Синема Сити. Все права защищены.
+        © 2026 Синема Сити. Все права защищены.
     </div>
 </footer>
 

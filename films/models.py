@@ -1,6 +1,41 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from autoslug import AutoSlugField
 from django.utils.safestring import mark_safe
+
+
+GENRE_CHOICES = [
+    ('Комедия', 'Комедия'),
+    ('Драма', 'Драма'),
+    ('Боевик', 'Боевик'),
+    ('Хоррор', 'Хоррор'),
+    ('Научная фантастика', 'Научная фантастика'),
+    ('Фэнтези', 'Фэнтези'),
+    ('Вестерн', 'Вестерн'),
+    ('Детектив', 'Детектив'),
+    ('Мюзикл', 'Мюзикл'),
+    ('Фильм-катастрофа', 'Фильм-катастрофа'),
+    ('Документальный', 'Документальный'),
+]
+
+COUNTRY_CHOICES = [
+    ('Германия', 'Германия'),
+    ('Китай', 'Китай'),
+    ('Италия', 'Италия'),
+    ('Великобритания', 'Великобритания'),
+    ('Индия', 'Индия'),
+    ('Испания', 'Испания'),
+    ('Япония', 'Япония'),
+    ('Франция', 'Франция'),
+    ('Турция', 'Турция'),
+    ('Греция', 'Греция'),
+    ('Россия', 'Россия'),
+    ('США', 'США'),
+    ('Канада', 'Канада'),
+    ('Казахстан', 'Казахстан'),
+    ('Южная Корея', 'Южная Корея'),
+    ('Нигерия', 'Нигерия'),
+]
 
 
 class Film(models.Model):
@@ -12,9 +47,18 @@ class Film(models.Model):
     ]
 
     title       = models.CharField(max_length=200, verbose_name='Название')
-    year        = models.IntegerField(verbose_name='Год')
-    genre       = models.CharField(max_length=200, verbose_name='Жанр')
-    country     = models.CharField(max_length=100, verbose_name='Страна', blank=True, default='')
+    year        = models.IntegerField(
+        verbose_name='Год',
+        validators=[MinValueValidator(1895), MaxValueValidator(2026)]
+    )
+    genre       = models.CharField(
+        max_length=100, verbose_name='Жанр',
+        blank=True, default=''
+    )
+    country     = models.CharField(
+        max_length=100, verbose_name='Страна',
+        choices=COUNTRY_CHOICES, blank=True, default=''
+    )
     description = models.TextField(verbose_name='Описание', blank=True)
     rating      = models.DecimalField(
         max_digits=3, decimal_places=1,
@@ -34,6 +78,7 @@ class Film(models.Model):
         blank=True, null=True
     )
     is_featured = models.BooleanField(default=False, verbose_name='Показывать на главной')
+    is_cartoon  = models.BooleanField(default=False, verbose_name='Мультфильм')
 
     slug = AutoSlugField(
         populate_from='title',
@@ -102,3 +147,83 @@ class Ticket(models.Model):
         verbose_name = 'Билет'
         verbose_name_plural = 'Билеты'
         unique_together = ('showtime', 'row_number', 'seat_number')
+
+
+class Slider(models.Model):
+    """Слайды для главного Hero-баннера."""
+    image       = models.ImageField(upload_to='slider/', verbose_name='Изображение')
+    title       = models.CharField(max_length=200, verbose_name='Название')
+    description = models.TextField(verbose_name='Описание', blank=True)
+    genre       = models.CharField(max_length=100, verbose_name='Жанр', blank=True)
+    duration    = models.PositiveIntegerField(verbose_name='Длительность (мин)', default=0)
+    rating      = models.DecimalField(
+        max_digits=3, decimal_places=1, verbose_name='Рейтинг', default=0.0
+    )
+    order       = models.PositiveSmallIntegerField(default=0, verbose_name='Порядок')
+    is_active   = models.BooleanField(default=True, verbose_name='Активен')
+
+    class Meta:
+        verbose_name = 'Слайд'
+        verbose_name_plural = 'Слайдер (главная)'
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title
+
+    def duration_display(self):
+        h = self.duration // 60
+        m = self.duration % 60
+        return f'{h}ч {m}м' if h else f'{m}м'
+
+
+class CartoonFilm(Film):
+    """Прокси-модель для управления мультфильмами в отдельной секции админки."""
+    class Meta:
+        proxy = True
+        verbose_name = 'Мультфильм'
+        verbose_name_plural = 'Мультфильмы'
+
+
+POSITION_CHOICES = [(i, str(i)) for i in range(1, 6)]
+
+
+class FeaturedFilm(models.Model):
+    """Рекомендуемые фильмы на главной (ровно 5 позиций)."""
+    film     = models.OneToOneField(
+        Film, on_delete=models.CASCADE,
+        limit_choices_to={'is_cartoon': False},
+        verbose_name='Фильм'
+    )
+    position = models.PositiveSmallIntegerField(
+        choices=POSITION_CHOICES, unique=True,
+        verbose_name='Позиция (1–5)'
+    )
+
+    class Meta:
+        verbose_name = 'Рекомендуемый фильм'
+        verbose_name_plural = 'Рекомендуемые фильмы (главная)'
+        ordering = ['position']
+
+    def __str__(self):
+        return f'#{self.position} — {self.film}'
+
+
+class FeaturedCartoon(models.Model):
+    """Рекомендуемые мультфильмы на главной (ровно 5 позиций)."""
+    film     = models.OneToOneField(
+        Film, on_delete=models.CASCADE,
+        limit_choices_to={'is_cartoon': True},
+        verbose_name='Мультфильм'
+    )
+    position = models.PositiveSmallIntegerField(
+        choices=POSITION_CHOICES, unique=True,
+        verbose_name='Позиция (1–5)'
+    )
+
+    class Meta:
+        verbose_name = 'Рекомендуемый мультфильм'
+        verbose_name_plural = 'Рекомендуемые мультфильмы (главная)'
+        ordering = ['position']
+
+    def __str__(self):
+        return f'#{self.position} — {self.film}'
