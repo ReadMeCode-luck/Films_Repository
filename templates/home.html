@@ -651,7 +651,7 @@
             genre: "{{ item.film.genre|escapejs }}",
             duration: "{{ item.film.duration_display|escapejs }}",
             rating: "{{ item.film.rating }}",
-            bg: "url('{{ item.film.poster.url }}')",
+            bg: "{% if item.film.poster %}url('{{ item.film.poster.url }}'){% else %}{% endif %}",
             url: "{% url 'film_detail' item.film.slug %}"
         }{% if not forloop.last %},{% endif %}
         {% empty %}
@@ -730,4 +730,4 @@
 
 </script>
 </body>
-</html>                                                                             
+</html>
