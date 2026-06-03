@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ film.title }} — Синема Сити</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#FF1E56', pinkHover: '#D6103F',
+                            darkBg: '#08080A', cardBg: '#111115',
+                            border: '#1E1E26', textGray: '#9CA3AF'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #08080A; color: #fff; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #08080A; }
+        ::-webkit-scrollbar-thumb { background: #1F1F27; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF1E56; }
+        .tab-btn.active { background: #FF1E56; color: #fff; border-color: #FF1E56; }
+        .showtime-card { transition: border-color 0.2s, box-shadow 0.2s; }
+        .showtime-card:hover { border-color: #FF1E56; box-shadow: 0 4px 20px rgba(255,30,86,0.15); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+<!-- ШАПКА -->
+<header class="sticky top-0 z-50 bg-[#08080A]/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="{% url 'index' %}" class="flex items-center space-x-2 group">
+            <div class="bg-gradient-to-r from-brand-pink to-pink-500 w-9 h-9 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
+                <i class="fa-solid fa-film text-white text-base"></i>
+            </div>
+            <div>
+                <h1 class="font-heading font-black text-base tracking-wider text-white">СИНЕМА <span class="text-brand-pink">СИТИ</span></h1>
+                <p class="text-[9px] text-brand-textGray tracking-widest uppercase leading-none">Онлайн кинотеатр</p>
+            </div>
+        </a>
+        <nav class="hidden md:flex items-center space-x-6 text-sm font-semibold">
+            <a href="{% url 'index' %}" class="text-brand-textGray hover:text-white transition-colors">Главная</a>
+            <a href="{% url 'films' %}" class="text-brand-textGray hover:text-white transition-colors">Фильмы</a>
+            <a href="{% url 'cartoons' %}" class="text-brand-textGray hover:text-white transition-colors">Мультфильмы</a>
+            <a href="#" class="text-brand-textGray hover:text-white transition-colors">Актёры</a>
+            <a href="#" class="text-brand-textGray hover:text-white transition-colors">О нас</a>
+        </nav>
+        <div class="flex items-center gap-3">
+            {% if user.is_authenticated %}
+                <span class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold">{{ user.username|first|upper }}</span>
+                <span class="text-sm text-white font-medium hidden sm:block">{{ user.username }}</span>
+                <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket text-xs"></i> Войти
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<!-- ХЛЕБНЫЕ КРОШКИ -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+    <nav class="flex items-center gap-2 text-sm text-brand-textGray">
+        <a href="{% url 'index' %}" class="hover:text-white transition-colors">Главная</a>
+        <span>/</span>
+        <a href="{% if film.is_cartoon %}{% url 'cartoons' %}{% else %}{% url 'films' %}{% endif %}" class="hover:text-white transition-colors">
+            {% if film.is_cartoon %}Мультфильмы{% else %}Фильмы{% endif %}
+        </a>
+        <span>/</span>
+        <span class="text-white">{{ film.title }}</span>
+    </nav>
+</div>
+
+<!-- ГЛАВНЫЙ БЛОК ФИЛЬМА -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-10">
+
+        <!-- ПОСТЕР + БОКОВАЯ ИНФО -->
+        <div class="flex-shrink-0 w-full lg:w-64">
+            <div class="rounded-2xl overflow-hidden border border-brand-border shadow-2xl aspect-[2/3] bg-brand-cardBg">
+                {% if film.poster %}
+                    <img src="{{ film.poster.url }}" alt="{{ film.title }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-brand-cardBg to-[#0a0a0f]">
+                        <i class="fa-solid fa-film text-4xl text-brand-border mb-2"></i>
+                        <span class="text-xs text-brand-textGray">Нет постера</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Кнопка "Купить билеты" — скролл вниз к сеансам -->
+            <a href="#showtimes" class="mt-4 w-full flex items-center justify-center gap-2 bg-brand-pink hover:bg-brand-pinkHover text-white font-semibold py-3 rounded-xl transition-colors shadow-lg">
+                <i class="fa-solid fa-ticket"></i>
+                Купить билеты
+            </a>
+
+            <!-- Рейтинг -->
+            <div class="mt-4 p-4 rounded-xl bg-brand-cardBg border border-brand-border">
+                <div class="text-xs text-brand-textGray mb-1">Рейтинг Синема Сити</div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-star text-yellow-400"></i>
+                    <span class="text-2xl font-bold text-white">{{ film.rating }}</span>
+                    <span class="text-brand-textGray text-sm">/ 10</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ОСНОВНАЯ ИНФО -->
+        <div class="flex-1 min-w-0">
+            <div class="flex items-start gap-3 flex-wrap mb-3">
+                <h1 class="font-heading font-black text-3xl sm:text-4xl text-white leading-tight">{{ film.title }}</h1>
+                <span class="mt-1 px-2 py-0.5 rounded-md bg-brand-border text-brand-textGray text-sm font-semibold border border-white/10">{{ film.age_rating }}</span>
+            </div>
+
+            {% if film.year %}
+            <div class="text-brand-textGray text-sm mb-5">{{ film.year }} год</div>
+            {% endif %}
+
+            <!-- Теги жанр/страна -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                {% if film.genre %}
+                <span class="px-3 py-1 rounded-full bg-brand-cardBg border border-brand-border text-sm text-white">{{ film.genre }}</span>
+                {% endif %}
+                {% if film.country %}
+                <span class="px-3 py-1 rounded-full bg-brand-cardBg border border-brand-border text-sm text-brand-textGray">{{ film.country }}</span>
+                {% endif %}
+                {% if film.quality %}
+                <span class="px-3 py-1 rounded-full bg-brand-pink/15 border border-brand-pink/30 text-sm text-brand-pink">{{ film.quality }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Таблица характеристик -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 mb-8 text-sm">
+                <div class="flex justify-between border-b border-brand-border pb-2">
+                    <span class="text-brand-textGray">Год производства</span>
+                    <span class="text-white font-medium">{{ film.year }}</span>
+                </div>
+                <div class="flex justify-between border-b border-brand-border pb-2">
+                    <span class="text-brand-textGray">Страна</span>
+                    <span class="text-white font-medium">{{ film.country|default:"—" }}</span>
+                </div>
+                <div class="flex justify-between border-b border-brand-border pb-2">
+                    <span class="text-brand-textGray">Жанр</span>
+                    <span class="text-white font-medium">{{ film.genre|default:"—" }}</span>
+                </div>
+                <div class="flex justify-between border-b border-brand-border pb-2">
+                    <span class="text-brand-textGray">Возраст</span>
+                    <span class="text-white font-medium">{{ film.age_rating }}</span>
+                </div>
+                <div class="flex justify-between border-b border-brand-border pb-2">
+                    <span class="text-brand-textGray">Длительность</span>
+                    <span class="text-white font-medium">{{ film.duration_display }}</span>
+                </div>
+                <div class="flex justify-between border-b border-brand-border pb-2">
+                    <span class="text-brand-textGray">Качество</span>
+                    <span class="text-white font-medium">{{ film.quality }}</span>
+                </div>
+                <div class="flex justify-between border-b border-brand-border pb-2">
+                    <span class="text-brand-textGray">Рейтинг</span>
+                    <span class="text-white font-medium">{{ film.rating }}</span>
+                </div>
+            </div>
+
+            <!-- Описание -->
+            {% if film.description %}
+            <div class="mb-8">
+                <h2 class="font-heading font-bold text-lg text-white mb-3">О фильме</h2>
+                <p class="text-brand-textGray leading-relaxed text-sm">{{ film.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Кадры из фильма -->
+            {% if film.images.all %}
+            <div class="mb-8">
+                <h2 class="font-heading font-bold text-lg text-white mb-3">Кадры</h2>
+                <div class="flex gap-3 overflow-x-auto pb-2">
+                    {% for img in film.images.all %}
+                    <img src="{{ img.image.url }}" alt="Кадр" class="h-32 w-auto rounded-xl flex-shrink-0 object-cover border border-brand-border">
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ТЕКУЩИЕ СЕАНСЫ -->
+    <section id="showtimes" class="mt-12">
+        <h2 class="font-heading font-bold text-2xl text-white mb-6">Текущие сеансы</h2>
+
+        {% if showtimes_by_date %}
+            <!-- Вкладки по дате -->
+            <div class="flex gap-2 overflow-x-auto pb-2 mb-6" id="date-tabs">
+                {% for group in showtimes_by_date %}
+                <button
+                    class="tab-btn flex-shrink-0 px-4 py-2 rounded-xl border border-brand-border text-sm font-semibold transition-all {% if forloop.first %}active{% else %}text-brand-textGray hover:text-white hover:border-white/20{% endif %}"
+                    data-date="{{ group.date|date:'Y-m-d' }}"
+                    onclick="switchDate('{{ group.date|date:'Y-m-d' }}')"
+                >
+                    {% if forloop.first %}Сегодня,{% endif %}
+                    {{ group.date|date:"j" }} {{ group.date|date:"E" }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Сеансы -->
+            {% for group in showtimes_by_date %}
+            <div class="date-panel" id="panel-{{ group.date|date:'Y-m-d' }}" {% if not forloop.first %}style="display:none"{% endif %}>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {% for st in group.showtimes %}
+                    <div class="showtime-card p-4 rounded-2xl bg-brand-cardBg border border-brand-border">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-2xl font-bold text-white font-heading">{{ st.date_time|date:"H:i" }}</span>
+                            <span class="text-xs px-2 py-1 rounded-lg bg-brand-border text-brand-textGray">{{ st.hall_name }}</span>
+                        </div>
+                        <div class="text-sm text-brand-textGray mb-4">
+                            Билеты от <span class="text-white font-semibold">{{ st.price|floatformat:0 }} ₽</span>
+                        </div>
+                        <a href="{% url 'seat_selection' st.pk %}" class="block w-full text-center py-2.5 rounded-xl bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold transition-colors">
+                            Выбрать места
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+
+        {% else %}
+            <div class="py-16 text-center rounded-2xl bg-brand-cardBg border border-brand-border">
+                <i class="fa-regular fa-calendar-xmark text-4xl text-brand-border mb-4 block"></i>
+                <p class="text-brand-textGray">Сеансов пока нет</p>
+            </div>
+        {% endif %}
+    </section>
+</main>
+
+<!-- ФУТЕР -->
+<footer class="mt-16 border-t border-brand-border py-8 text-center text-brand-textGray text-sm">
+    <span class="font-heading font-black text-brand-pink">СИНЕМА СИТИ</span> &copy; {{ film.year }}
+</footer>
+
+<script>
+function switchDate(date) {
+    document.querySelectorAll('.date-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('panel-' + date);
+    if (panel) panel.style.display = '';
+    document.querySelectorAll('.tab-btn[data-date="' + date + '"]').forEach(b => b.classList.add('active'));
+}
+</script>
+</body>
+</html>

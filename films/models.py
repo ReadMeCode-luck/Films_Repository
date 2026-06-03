@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from autoslug import AutoSlugField
+from django.utils.text import slugify
 from django.utils.safestring import mark_safe
 
 
@@ -46,7 +46,15 @@ class Film(models.Model):
         ('CAM', 'CAM'),
     ]
 
+    AGE_RATING_CHOICES = [
+        ('0+', '0+'), ('6+', '6+'), ('12+', '12+'), ('16+', '16+'), ('18+', '18+'),
+    ]
+
     title       = models.CharField(max_length=200, verbose_name='Название')
+    age_rating  = models.CharField(
+        max_length=5, choices=AGE_RATING_CHOICES,
+        default='0+', verbose_name='Возрастной рейтинг'
+    )
     year        = models.IntegerField(
         verbose_name='Год',
         validators=[MinValueValidator(1895), MaxValueValidator(2026)]
@@ -80,11 +88,11 @@ class Film(models.Model):
     is_featured = models.BooleanField(default=False, verbose_name='Показывать на главной')
     is_cartoon  = models.BooleanField(default=False, verbose_name='Мультфильм')
 
-    slug = AutoSlugField(
-        populate_from='title',
-        unique_with=['year'],
-        always_update=True,
-        null=True, blank=True
+    slug = models.SlugField(
+        max_length=220, unique=True,
+        null=True, blank=True,
+        verbose_name='Slug (URL)',
+        allow_unicode=True,
     )
 
     class Meta:
@@ -94,6 +102,17 @@ class Film(models.Model):
 
     def __str__(self):
         return f'{self.title} ({self.year})'
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.title, allow_unicode=True) or f'film-{self.pk or 0}'
+            slug = base
+            n = 1
+            while Film.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base}-{n}'
+                n += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def duration_display(self):
         """Возвращает строку вида '2ч 36м'."""
@@ -113,7 +132,7 @@ class FilmImage(models.Model):
 
 class Genre(models.Model):
     genre = models.CharField(max_length=100, verbose_name='Жанр')
-    slug  = AutoSlugField(populate_from='genre', unique=True, null=True, blank=True)
+    slug  = models.SlugField(max_length=120, unique=True, null=True, blank=True, allow_unicode=True)
 
     class Meta:
         verbose_name = 'Жанр'
@@ -124,10 +143,12 @@ class Genre(models.Model):
 
 
 class Showtime(models.Model):
-    film      = models.ForeignKey(Film, on_delete=models.CASCADE, verbose_name='Фильм')
-    date_time = models.DateTimeField(verbose_name='Дата и время сеанса')
-    hall_name = models.CharField(max_length=50, verbose_name='Зал')
-    price     = models.FloatField(verbose_name='Цена билета на этот сеанс')
+    film          = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='showtimes', verbose_name='Фильм')
+    date_time     = models.DateTimeField(verbose_name='Дата и время сеанса')
+    hall_name     = models.CharField(max_length=50, verbose_name='Зал')
+    price         = models.FloatField(verbose_name='Цена билета на этот сеанс')
+    rows          = models.PositiveSmallIntegerField(default=10, verbose_name='Рядов в зале')
+    seats_per_row = models.PositiveSmallIntegerField(default=12, verbose_name='Мест в ряду')
 
     class Meta:
         verbose_name = 'Сеанс'
@@ -166,6 +187,32 @@ class Slider(models.Model):
         verbose_name = 'Слайд'
         verbose_name_plural = 'Слайдер (главная)'
         ordering = ['order']
+
+    def __str__(self):
+        return self.title
+
+    def duration_display(self):
+        h = self.duration // 60
+        m = self.duration % 60
+        return f'{h}ч {m}м' if h else f'{m}м'
+
+
+class PromoBanner(models.Model):
+    """Промо-баннер на главной странице (большой блок с фоновым изображением)."""
+    badge_text  = models.CharField(max_length=60, default='Премьера недели', verbose_name='Текст значка')
+    image       = models.ImageField(upload_to='promo/', verbose_name='Фоновое изображение')
+    title       = models.CharField(max_length=200, verbose_name='Название (крупно)')
+    subtitle    = models.CharField(max_length=200, blank=True, verbose_name='Подзаголовок (розовый)')
+    description = models.TextField(blank=True, verbose_name='Описание / синопсис')
+    genre       = models.CharField(max_length=150, blank=True, verbose_name='Жанр')
+    rating      = models.DecimalField(max_digits=3, decimal_places=1, default=0.0, verbose_name='IMDb рейтинг')
+    duration    = models.PositiveIntegerField(default=0, verbose_name='Длительность (мин)')
+    button_url  = models.CharField(max_length=300, blank=True, default='#', verbose_name='Ссылка кнопки «Смотреть»')
+    is_active   = models.BooleanField(default=True, verbose_name='Показывать на сайте')
+
+    class Meta:
+        verbose_name = 'Промо-баннер'
+        verbose_name_plural = 'Промо-баннер (главная)'
 
     def __str__(self):
         return self.title
@@ -227,3 +274,41 @@ class FeaturedCartoon(models.Model):
 
     def __str__(self):
         return f'#{self.position} — {self.film}'
+
+
+SLIDER_ORDER_CHOICES = [(i, str(i)) for i in range(1, 11)]
+
+
+class SliderItem(models.Model):
+    """Фильм в герой-карусели на главной странице."""
+    film  = models.OneToOneField(
+        Film, on_delete=models.CASCADE,
+        verbose_name='Фильм'
+    )
+    order = models.PositiveSmallIntegerField(
+        choices=SLIDER_ORDER_CHOICES, unique=True,
+        verbose_name='Позиция (1–10)'
+    )
+
+    class Meta:
+        verbose_name = 'Слайд'
+        verbose_name_plural = 'Слайдер (главная)'
+        ordering = ['order']
+
+    def __str__(self):
+        return f'#{self.order} — {self.film}'
+
+
+class BannerItem(models.Model):
+    """Промо-баннер на главной — один активный фильм."""
+    film = models.OneToOneField(
+        Film, on_delete=models.CASCADE,
+        verbose_name='Фильм'
+    )
+
+    class Meta:
+        verbose_name = 'Промо-баннер'
+        verbose_name_plural = 'Промо-баннер (главная)'
+
+    def __str__(self):
+        return f'Баннер: {self.film}'

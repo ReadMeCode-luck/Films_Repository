@@ -1,8 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.generics import ListAPIView
 from django.template.context_processors import csrf
 from django.db.models import Q
-from .models import Film, Genre, Slider, FeaturedFilm, FeaturedCartoon, COUNTRY_CHOICES
+from collections import defaultdict
+from .models import Film, Genre, SliderItem, BannerItem, FeaturedFilm, FeaturedCartoon, Showtime, Ticket, COUNTRY_CHOICES
 
 YEAR_MIN = 1895
 YEAR_MAX = 2026
@@ -14,12 +18,14 @@ def _get_genre_choices():
 
 
 def index(request):
-    sliders           = Slider.objects.filter(is_active=True)
+    slider_items      = SliderItem.objects.select_related('film').order_by('order')
+    banner_item       = BannerItem.objects.select_related('film').first()
     featured_films    = FeaturedFilm.objects.select_related('film').order_by('position')[:5]
     featured_cartoons = FeaturedCartoon.objects.select_related('film').order_by('position')[:5]
     years = list(range(YEAR_MAX, YEAR_MIN - 1, -1))
     context = {
-        'sliders':            sliders,
+        'slider_items':       slider_items,
+        'banner_item':        banner_item,
         'featured_films':     featured_films,
         'featured_cartoons':  featured_cartoons,
         'genre_choices':      _get_genre_choices(),
@@ -109,7 +115,63 @@ def cartoons_page(request):
 
 def film_detail(request, slug):
     film = get_object_or_404(Film, slug=slug)
-    return render(request, 'film_detail.html', {'film': film})
+    showtimes = Showtime.objects.filter(film=film).order_by('date_time')
+
+    # Group showtimes by date
+    grouped = defaultdict(list)
+    for st in showtimes:
+        date_key = st.date_time.date()
+        grouped[date_key].append(st)
+
+    showtimes_by_date = [
+        {'date': date, 'showtimes': items}
+        for date, items in sorted(grouped.items())
+    ]
+
+    return render(request, 'film_detail.html', {
+        'film': film,
+        'showtimes_by_date': showtimes_by_date,
+    })
+
+
+def seat_selection(request, showtime_id):
+    showtime = get_object_or_404(Showtime, pk=showtime_id)
+    tickets = Ticket.objects.filter(showtime=showtime).order_by('row_number', 'seat_number')
+
+    # Build row-based grid
+    rows = defaultdict(list)
+    for t in tickets:
+        rows[t.row_number].append(t)
+    seat_grid = [{'row': row, 'seats': seats} for row, seats in sorted(rows.items())]
+
+    return render(request, 'seat_selection.html', {
+        'showtime': showtime,
+        'seat_grid': seat_grid,
+    })
+
+
+@require_POST
+def book_seats(request, showtime_id):
+    """Mark selected seats as bought and show confirmation."""
+    showtime = get_object_or_404(Showtime, pk=showtime_id)
+    seat_ids = request.POST.getlist('seats')  # list of ticket PKs
+
+    booked = []
+    for tid in seat_ids:
+        try:
+            ticket = Ticket.objects.get(pk=int(tid), showtime=showtime, is_bought=False)
+            ticket.is_bought = True
+            ticket.save()
+            booked.append(ticket)
+        except (Ticket.DoesNotExist, ValueError):
+            pass
+
+    total = sum(showtime.price for _ in booked)
+    return render(request, 'booking_confirmation.html', {
+        'showtime': showtime,
+        'booked': booked,
+        'total': total,
+    })
 
 
 class FilmList(ListAPIView):

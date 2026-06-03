@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор мест — {{ showtime.film.title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#FF1E56', pinkHover: '#D6103F',
+                            darkBg: '#08080A', cardBg: '#111115',
+                            border: '#1E1E26', textGray: '#9CA3AF'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #08080A; color: #fff; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #08080A; }
+        ::-webkit-scrollbar-thumb { background: #1F1F27; border-radius: 4px; }
+
+        .seat {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px 6px 4px 4px;
+            cursor: pointer;
+            transition: transform 0.15s, background 0.15s;
+            flex-shrink: 0;
+        }
+        .seat.available { background: #2a2a36; border: 1px solid #3a3a4a; }
+        .seat.available:hover { background: #3d3d52; transform: scale(1.15); }
+        .seat.occupied { background: #1a1a22; border: 1px solid #252530; cursor: not-allowed; opacity: 0.5; }
+        .seat.selected { background: #FF1E56; border: 1px solid #FF1E56; transform: scale(1.1); }
+        .seat.selected:hover { background: #D6103F; }
+
+        /* Screen glow */
+        .screen-glow {
+            background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent);
+            border-radius: 50% 50% 0 0 / 30px 30px 0 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+<!-- ШАПКА -->
+<header class="sticky top-0 z-50 bg-[#08080A]/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="{% url 'index' %}" class="flex items-center space-x-2 group">
+            <div class="bg-gradient-to-r from-brand-pink to-pink-500 w-9 h-9 rounded-xl flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-film text-white text-base"></i>
+            </div>
+            <div>
+                <h1 class="font-heading font-black text-base tracking-wider text-white">СИНЕМА <span class="text-brand-pink">СИТИ</span></h1>
+                <p class="text-[9px] text-brand-textGray tracking-widest uppercase leading-none">Онлайн кинотеатр</p>
+            </div>
+        </a>
+        <div class="flex items-center gap-3">
+            {% if user.is_authenticated %}
+                <span class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold">{{ user.username|first|upper }}</span>
+                <span class="text-sm text-white font-medium hidden sm:block">{{ user.username }}</span>
+                <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Войти</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-10">
+
+    <!-- Заголовок -->
+    <div class="text-center mb-8">
+        <h1 class="font-heading font-black text-3xl text-white mb-1">{{ showtime.film.title }} <span class="text-brand-textGray font-normal text-xl">({{ showtime.film.year }})</span></h1>
+    </div>
+
+    <!-- Степпер -->
+    <div class="flex items-center justify-center gap-0 mb-10">
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-brand-pink flex items-center justify-center text-xs font-bold text-white">1</div>
+            <span class="text-sm font-semibold text-white uppercase tracking-wide">Выберите место</span>
+        </div>
+        <div class="w-16 h-px bg-brand-border mx-3"></div>
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-brand-border flex items-center justify-center text-xs font-bold text-brand-textGray">2</div>
+            <span class="text-sm font-semibold text-brand-textGray uppercase tracking-wide">Оплата</span>
+        </div>
+        <div class="w-16 h-px bg-brand-border mx-3"></div>
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-brand-border flex items-center justify-center text-xs font-bold text-brand-textGray">3</div>
+            <span class="text-sm font-semibold text-brand-textGray uppercase tracking-wide">Билет</span>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8 items-start">
+
+        <!-- ЛЕВАЯ ПАНЕЛЬ: постер + выбранные места -->
+        <div class="w-full lg:w-72 flex-shrink-0">
+            <!-- Постер -->
+            {% if showtime.film.poster %}
+            <div class="rounded-2xl overflow-hidden border border-brand-border mb-6 aspect-[2/3]">
+                <img src="{{ showtime.film.poster.url }}" alt="{{ showtime.film.title }}" class="w-full h-full object-cover">
+            </div>
+            {% endif %}
+
+            <!-- Выбранные места -->
+            <div id="selected-list" class="space-y-2 mb-4"></div>
+
+            <!-- Итого -->
+            <div class="flex justify-between items-center py-3 border-t border-brand-border text-sm font-semibold">
+                <span class="text-brand-textGray">Итого:</span>
+                <span id="total-price" class="text-white text-lg">0 ₽</span>
+            </div>
+
+            <!-- Дата и зал -->
+            <div class="mt-4 p-4 rounded-xl bg-brand-cardBg border border-brand-border text-sm space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-brand-textGray">Дата</span>
+                    <span class="text-white font-medium">{{ showtime.date_time|date:"j E" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-brand-textGray">Время</span>
+                    <span class="text-white font-medium">{{ showtime.date_time|date:"H:i" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-brand-textGray">Зал</span>
+                    <span class="text-white font-medium">{{ showtime.hall_name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПРАВАЯ ПАНЕЛЬ: схема зала -->
+        <div class="flex-1">
+            <!-- Экран -->
+            <div class="mb-8">
+                <div class="screen-glow h-3 w-4/5 mx-auto mb-1"></div>
+                <p class="text-center text-xs text-brand-textGray tracking-widest uppercase">Экран</p>
+            </div>
+
+            <!-- Сетка мест -->
+            <div id="seat-grid" class="overflow-x-auto pb-4">
+                <div class="flex flex-col items-center gap-1.5 min-w-max mx-auto">
+                    {% for row_data in seat_grid %}
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] text-brand-textGray w-5 text-right flex-shrink-0">{{ row_data.row }}</span>
+                        {% for ticket in row_data.seats %}
+                        <div
+                            class="seat {% if ticket.is_bought %}occupied{% else %}available{% endif %}"
+                            data-ticket-id="{{ ticket.pk }}"
+                            data-row="{{ ticket.row_number }}"
+                            data-seat="{{ ticket.seat_number }}"
+                            data-price="{{ showtime.price|floatformat:0 }}"
+                            {% if not ticket.is_bought %}onclick="toggleSeat(this)"{% endif %}
+                            title="Ряд {{ ticket.row_number }}, Место {{ ticket.seat_number }}"
+                        ></div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Легенда -->
+            <div class="flex items-center justify-center gap-6 mt-6 text-xs text-brand-textGray">
+                <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded seat available"></div>
+                    <span>Доступно</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded seat occupied"></div>
+                    <span>Занято</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded seat selected"></div>
+                    <span>Выбрано</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопки -->
+    <form method="POST" action="{% url 'book_seats' showtime.pk %}" id="booking-form">
+        {% csrf_token %}
+        <div id="hidden-inputs"></div>
+        <div class="flex justify-between mt-10 gap-4">
+            <a href="{% url 'film_detail' showtime.film.slug %}"
+               class="px-8 py-3 rounded-xl border border-brand-border text-white font-semibold text-sm hover:bg-brand-cardBg transition-colors uppercase tracking-wide">
+                Отмена
+            </a>
+            <button type="submit" id="btn-next"
+                class="px-10 py-3 rounded-xl bg-brand-pink hover:bg-brand-pinkHover text-white font-bold text-sm transition-colors uppercase tracking-wide disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled>
+                Далее
+            </button>
+        </div>
+    </form>
+
+</main>
+
+<script>
+const PRICE = {{ showtime.price|floatformat:0 }};
+const selected = new Set();
+
+function toggleSeat(el) {
+    const id = el.dataset.ticketId;
+    const row = el.dataset.row;
+    const seat = el.dataset.seat;
+
+    if (el.classList.contains('selected')) {
+        el.classList.remove('selected');
+        el.classList.add('available');
+        selected.delete(id);
+    } else {
+        el.classList.remove('available');
+        el.classList.add('selected');
+        selected.add(id);
+    }
+    updateSidebar();
+}
+
+function updateSidebar() {
+    const list = document.getElementById('selected-list');
+    const hiddenInputs = document.getElementById('hidden-inputs');
+    const totalEl = document.getElementById('total-price');
+    const btnNext = document.getElementById('btn-next');
+
+    list.innerHTML = '';
+    hiddenInputs.innerHTML = '';
+
+    selected.forEach(id => {
+        const el = document.querySelector(`.seat[data-ticket-id="${id}"]`);
+        if (!el) return;
+        const row = el.dataset.row;
+        const seat = el.dataset.seat;
+
+        // Sidebar item
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between px-3 py-2 rounded-xl bg-brand-cardBg border border-brand-border text-sm';
+        div.innerHTML = `
+            <span class="text-white">Ряд ${row}, Место ${seat}</span>
+            <div class="flex items-center gap-2">
+                <span class="text-white font-semibold">${PRICE} ₽</span>
+                <button type="button" onclick="removeSeat('${id}')" class="text-brand-textGray hover:text-brand-pink transition-colors text-xs">✕</button>
+            </div>`;
+        list.appendChild(div);
+
+        // Hidden input
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'seats';
+        inp.value = id;
+        hiddenInputs.appendChild(inp);
+    });
+
+    const total = selected.size * PRICE;
+    totalEl.textContent = total.toLocaleString('ru-RU') + ' ₽';
+    btnNext.disabled = selected.size === 0;
+}
+
+function removeSeat(id) {
+    const el = document.querySelector(`.seat[data-ticket-id="${id}"]`);
+    if (el) {
+        el.classList.remove('selected');
+        el.classList.add('available');
+    }
+    selected.delete(id);
+    updateSidebar();
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -9,7 +9,9 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('films/', views.films_page, name='films'),
     path('cartoons/', views.cartoons_page, name='cartoons'),
-    path('films/<slug:slug>/', views.film_detail, name='film_detail'),
+    re_path(r'^films/(?P<slug>[-\wЀ-ӿ]+)/$', views.film_detail, name='film_detail'),
+    path('showtime/<int:showtime_id>/seats/', views.seat_selection, name='seat_selection'),
+    path('showtime/<int:showtime_id>/book/', views.book_seats, name='book_seats'),
     path('profile/', include('users.urls')),
     path('api/films/', views.FilmList.as_view(), name='film-list'),
     path('admin/', admin.site.urls),

@@ -177,7 +177,7 @@
 </div>
 {% endif %}
 
-<!-- ГЛАВНЫЙ ГЕРОЙ-БЛОК (HERO SECTION) — данные из Slider БД -->
+<!-- ГЛАВНЫЙ ГЕРОЙ-БЛОК (HERO SECTION) — фильмы с галочкой «В карусель» -->
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-16 md:pt-28 flex justify-start items-center">
     <div class="max-w-2xl text-left space-y-6">
 
@@ -188,40 +188,42 @@
 
         <div class="space-y-1">
             <h2 class="slide-title font-heading text-4xl sm:text-6xl font-black tracking-tight leading-tight uppercase text-white">
-                {% if sliders %}{{ sliders.0.title }}{% else %}Синема Сити{% endif %}
+                {% if slider_items %}{{ slider_items.0.film.title }}{% else %}Синема Сити{% endif %}
             </h2>
         </div>
 
         <div class="space-y-2">
             <h3 class="text-xs font-bold uppercase tracking-widest text-brand-textGray">Синопсис</h3>
             <p class="slide-description text-sm sm:text-base text-gray-300 leading-relaxed max-w-xl">
-                {% if sliders %}{{ sliders.0.description }}{% else %}Лучший выбор фильмов и мультфильмов.{% endif %}
+                {% if slider_items %}{{ slider_items.0.film.description }}{% else %}Лучший выбор фильмов и мультфильмов.{% endif %}
             </p>
         </div>
 
         <div class="flex items-center space-x-6 text-sm">
             <div>
                 <span class="text-xs font-bold text-brand-textGray uppercase block mb-1">Жанр</span>
-                <span class="slide-genre font-semibold text-white">{% if sliders %}{{ sliders.0.genre }}{% endif %}</span>
+                <span class="slide-genre font-semibold text-white">{% if slider_items %}{{ slider_items.0.film.genre }}{% endif %}</span>
             </div>
             <div class="w-[1px] h-8 bg-white/10"></div>
             <div>
                 <span class="text-xs font-bold text-brand-textGray uppercase block mb-1">Длительность</span>
                 <span class="slide-duration font-semibold text-white">
                     <i class="fa-regular fa-clock text-brand-pink mr-1.5"></i>
-                    {% if sliders %}{{ sliders.0.duration_display }}{% endif %}
+                    {% if slider_items %}{{ slider_items.0.film.duration_display }}{% endif %}
                 </span>
             </div>
             <div class="w-[1px] h-8 bg-white/10"></div>
             <div>
                 <span class="text-xs font-bold text-brand-textGray uppercase block mb-1">Рейтинг</span>
                 <span class="bg-yellow-500 text-black font-extrabold text-[11px] px-2 py-0.5 rounded mr-1">IMDb</span>
-                <strong class="slide-rating text-white">{% if sliders %}{{ sliders.0.rating }}{% endif %}<span class="text-gray-500 font-normal">/10</span></strong>
+                <strong class="slide-rating text-white">{% if slider_items %}{{ slider_items.0.film.rating }}{% endif %}<span class="text-gray-500 font-normal">/10</span></strong>
             </div>
         </div>
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
-            <a href="#" class="bg-brand-pink hover:bg-brand-pinkHover text-white font-extrabold px-8 py-4 rounded-2xl transition-all shadow-lg hover:shadow-brand-pink/30 text-center flex items-center justify-center space-x-3">
+            <a id="slide-watch-btn"
+               href="{% if slider_items %}{% url 'film_detail' slider_items.0.film.slug %}{% else %}#{% endif %}"
+               class="bg-brand-pink hover:bg-brand-pinkHover text-white font-extrabold px-8 py-4 rounded-2xl transition-all shadow-lg hover:shadow-brand-pink/30 text-center flex items-center justify-center space-x-3">
                 <i class="fa-solid fa-circle-play text-lg"></i>
                 <span>Смотреть</span>
             </a>
@@ -236,7 +238,7 @@
             <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div class="flex items-center space-x-2.5" id="dots-container">
-            {% for slide in sliders %}
+            {% for item in slider_items %}
             <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="{{ forloop.counter0 }}"></span>
             {% empty %}
             <span class="dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all" data-index="0"></span>
@@ -496,15 +498,16 @@
 
 </div>
 
-<!-- ПРОМО-БАННЕР БЭТМЕН (PREMIUM PROMO BANNER) -->
+<!-- ПРОМО-БАННЕР — фильм с галочкой «В промо-баннер» -->
+{% if banner_item %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full my-20">
     <div class="promo-container relative h-[500px] md:h-[420px] rounded-[36px] overflow-hidden bg-brand-cardBg border border-brand-border/40 shadow-2xl">
 
-        <!-- Задний фон баннера с градиентным затемнением влево для удобства чтения -->
         <div class="absolute inset-0 z-0">
             <div class="absolute inset-0 bg-gradient-to-r from-[#08080A] via-[#08080A]/90 to-transparent z-10"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-[#08080A] via-transparent to-transparent z-10"></div>
-            <img src="{% static 'image/Batmen.svg' %}" alt="Бэтмен" class="w-full h-full object-cover object-right opacity-80 md:opacity-100" onerror="this.src='https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&q=80&w=1200'">
+            <img src="{{ banner_item.film.poster.url }}" alt="{{ banner_item.film.title }}"
+                 class="w-full h-full object-cover object-right opacity-80 md:opacity-100">
         </div>
 
         <div class="promo-content relative z-20 max-w-xl h-full flex flex-col justify-center p-8 md:p-12 space-y-4">
@@ -514,52 +517,40 @@
             </div>
 
             <div>
-                <h2 class="promo-title font-heading text-3xl sm:text-4xl font-black text-white leading-tight uppercase">The Batman 2022</h2>
-                <p class="promo-subtitle text-brand-pink font-semibold text-sm">Бэтмен</p>
+                <h2 class="font-heading text-3xl sm:text-4xl font-black text-white leading-tight uppercase">{{ banner_item.film.title }}</h2>
+                {% if banner_item.film.genre %}
+                <p class="text-brand-pink font-semibold text-sm mt-1">{{ banner_item.film.genre }}</p>
+                {% endif %}
             </div>
 
-            <p class="promo-plot text-xs sm:text-sm text-gray-300 leading-relaxed">
-                На втором году борьбы с преступностью Готэма Бэтмен берется за расследование серии жестоких убийств элиты
-                города, совершенных Загадочником. Распутывая паутину лжи, он сталкивается с масштабной коррупцией, которая
-                напрямую связывает его семью с преступным миром мегаполиса.
-            </p>
+            {% if banner_item.film.description %}
+            <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">{{ banner_item.film.description|truncatewords:40 }}</p>
+            {% endif %}
 
-            <div class="flex items-center space-x-4 text-xs">
-                <div>
-                    <span class="text-brand-pink font-bold">Экшен, Драма, Криминал</span>
-                </div>
-                <div class="w-[1px] h-4 bg-white/20"></div>
+            <div class="flex items-center space-x-4 text-xs flex-wrap gap-y-2">
+                {% if banner_item.film.rating %}
                 <div class="flex items-center text-white">
                     <span class="bg-yellow-500 text-black font-black text-[10px] px-1.5 py-0.5 rounded mr-1.5">IMDb</span>
-                    <strong>7.8</strong>
+                    <strong>{{ banner_item.film.rating }}</strong>
                 </div>
                 <div class="w-[1px] h-4 bg-white/20"></div>
-                <div>
-                    <span>⏱ 2ч 56м</span>
-                </div>
+                {% endif %}
+                {% if banner_item.film.duration %}
+                <div><span>⏱ {{ banner_item.film.duration_display }}</span></div>
+                {% endif %}
             </div>
 
             <div class="pt-2">
-                <a href="#" class="btn-promo-watch bg-brand-pink hover:bg-brand-pinkHover text-white font-extrabold px-6 py-3 rounded-xl transition-all shadow-md hover:shadow-brand-pink/25 inline-flex items-center space-x-2 text-sm">
+                <a href="{% url 'film_detail' banner_item.film.slug %}"
+                   class="btn-promo-watch bg-brand-pink hover:bg-brand-pinkHover text-white font-extrabold px-6 py-3 rounded-xl transition-all shadow-md hover:shadow-brand-pink/25 inline-flex items-center space-x-2 text-sm">
                     <i class="fa-solid fa-play"></i>
-                    <span>Смотреть бесплатно</span>
+                    <span>Смотреть</span>
                 </a>
             </div>
         </div>
-
-        <!-- Навигация слайдера внутри баннера (точки и стрелки) -->
-        <div class="promo-slider-controls absolute bottom-6 right-6 md:right-12 z-30 bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/5 flex items-center space-x-3 text-xs">
-            <span class="promo-arrow text-brand-pink hover:text-white cursor-pointer transition-colors" id="promo-prev"><i class="fa-solid fa-chevron-left"></i></span>
-            <span class="promo-dot w-1.5 h-1.5 rounded-full bg-white/20 cursor-pointer transition-all"></span>
-            <span class="promo-dot w-1.5 h-1.5 rounded-full bg-white/20 cursor-pointer transition-all"></span>
-            <span class="promo-dot w-1.5 h-1.5 rounded-full bg-white/20 cursor-pointer transition-all"></span>
-            <span class="promo-dot w-1.5 h-1.5 rounded-full bg-white/20 cursor-pointer transition-all"></span>
-            <span class="promo-dot w-1.5 h-1.5 rounded-full bg-brand-pink cursor-pointer transition-all active shadow-[0_0_8px_#FF1E56]"></span>
-            <span class="promo-dot w-1.5 h-1.5 rounded-full bg-white/20 cursor-pointer transition-all"></span>
-            <span class="promo-arrow text-brand-pink hover:text-white cursor-pointer transition-colors" id="promo-next"><i class="fa-solid fa-chevron-right"></i></span>
-        </div>
     </div>
 </div>
+{% endif %}
 
 <!-- ПОДВАЛ САЙТА (FOOTER) -->
 <footer class="bg-black border-t border-brand-border/40 py-16">
@@ -653,28 +644,30 @@
 
     // Данные слайдов из Django (Slider модель)
     const slidesDataFixed = [
-        {% for slide in sliders %}
+        {% for item in slider_items %}
         {
-            title: "{{ slide.title|escapejs }}",
-            description: "{{ slide.description|escapejs }}",
-            genre: "{{ slide.genre|escapejs }}",
-            duration: "{{ slide.duration_display|escapejs }}",
-            rating: "{{ slide.rating }}",
-            bg: "url('{{ slide.image.url }}')"
+            title: "{{ item.film.title|escapejs }}",
+            description: "{{ item.film.description|escapejs }}",
+            genre: "{{ item.film.genre|escapejs }}",
+            duration: "{{ item.film.duration_display|escapejs }}",
+            rating: "{{ item.film.rating }}",
+            bg: "url('{{ item.film.poster.url }}')",
+            url: "{% url 'film_detail' item.film.slug %}"
         }{% if not forloop.last %},{% endif %}
         {% empty %}
-        {title: "Синема Сити", description: "Лучший онлайн-кинотеатр.", genre: "", duration: "", rating: "", bg: ""}
+        {title: "Синема Сити", description: "Лучший онлайн-кинотеатр.", genre: "", duration: "", rating: "", bg: "", url: "#"}
         {% endfor %}
     ];
 
     let currentIdx = 0;
-    const dots = document.querySelectorAll('.dot');
+    const dots     = document.querySelectorAll('.dot');
     const titleEl  = document.querySelector('.slide-title');
     const descEl   = document.querySelector('.slide-description');
     const genreEl  = document.querySelector('.slide-genre');
     const durEl    = document.querySelector('.slide-duration');
     const ratingEl = document.querySelector('.slide-rating');
     const bgEl     = document.querySelector('.hero-background');
+    const watchBtn = document.getElementById('slide-watch-btn');
 
     function updateSlider(index) {
         dots.forEach(dot => {
@@ -692,7 +685,8 @@
         if (genreEl)  genreEl.textContent  = s.genre;
         if (durEl)    durEl.innerHTML      = `<i class="fa-regular fa-clock text-brand-pink mr-1.5"></i>${s.duration}`;
         if (ratingEl) ratingEl.innerHTML   = `${s.rating}<span class="text-gray-500 font-normal">/10</span>`;
-        if (bgEl && s.bg !== "url('')") {
+        if (watchBtn) watchBtn.href        = s.url || '#';
+        if (bgEl && s.bg && s.bg !== "url('')") {
             bgEl.style.background = `radial-gradient(circle at 30% 40%, rgba(8,8,10,0.1) 0%, rgba(8,8,10,0.98) 85%), ${s.bg} no-repeat center top`;
             bgEl.style.backgroundSize = 'cover';
         }
@@ -736,4 +730,4 @@
 
 </script>
 </body>
-</html>
+</html>                                                                             

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.sites.models import Site
 from django.utils.safestring import mark_safe
-from .models import Film, CartoonFilm, Genre, Ticket, Showtime, FilmImage, Slider, FeaturedFilm, FeaturedCartoon
+from .models import Film, CartoonFilm, Genre, Ticket, Showtime, FilmImage, Slider, FeaturedFilm, FeaturedCartoon, PromoBanner, SliderItem, BannerItem
 
 # Убираем ненужный раздел «Сайты» из админки
 try:
@@ -44,6 +44,13 @@ class FilmImageInline(admin.StackedInline):
     preview.short_description = 'Превью'
 
 
+class ShowtimeInline(admin.TabularInline):
+    model = Showtime
+    extra = 1
+    fields = ['date_time', 'hall_name', 'price', 'rows', 'seats_per_row']
+    show_change_link = True
+
+
 # ── Базовый класс AdminFilm ──────────────────────────────────────────────────
 
 class BaseFilmAdmin(admin.ModelAdmin):
@@ -52,11 +59,11 @@ class BaseFilmAdmin(admin.ModelAdmin):
     list_filter   = ['genre', 'quality', 'country', 'is_featured', 'year']
     search_fields = ['title', 'genre', 'country']
     readonly_fields = ['poster_preview']
-    inlines = [FilmImageInline]
+    inlines = [FilmImageInline, ShowtimeInline]
 
     fieldsets = (
         ('Основное', {
-            'fields': ('title', 'year', 'is_featured')
+            'fields': ('title', 'year', 'age_rating', 'is_featured')
         }),
         ('Детали', {
             'fields': ('genre', 'country', 'quality', 'duration', 'price', 'rating')
@@ -84,12 +91,12 @@ class BaseFilmAdmin(admin.ModelAdmin):
 @admin.register(Film)
 class FilmAdmin(BaseFilmAdmin):
     list_display  = ['poster_preview', 'title', 'year', 'genre', 'country',
-                     'rating', 'quality', 'duration', 'is_featured', 'is_cartoon']
-    list_editable = ['rating', 'is_featured', 'is_cartoon']
+                     'rating', 'age_rating', 'is_featured']
+    list_editable = ['rating', 'is_featured']
 
     fieldsets = (
         ('Основное', {
-            'fields': ('title', 'year', 'is_featured', 'is_cartoon')
+            'fields': ('title', 'year', 'age_rating', 'is_featured')
         }),
         ('Детали', {
             'fields': ('genre', 'country', 'quality', 'duration', 'price', 'rating')
@@ -111,8 +118,23 @@ class FilmAdmin(BaseFilmAdmin):
 @admin.register(CartoonFilm)
 class CartoonAdmin(BaseFilmAdmin):
     list_display  = ['poster_preview', 'title', 'year', 'genre', 'country',
-                     'rating', 'quality', 'duration', 'is_featured']
+                     'rating', 'age_rating', 'is_featured']
     list_editable = ['rating', 'is_featured']
+
+    fieldsets = (
+        ('Основное', {
+            'fields': ('title', 'year', 'age_rating', 'is_featured')
+        }),
+        ('Детали', {
+            'fields': ('genre', 'country', 'quality', 'duration', 'price', 'rating')
+        }),
+        ('Медиа', {
+            'fields': ('poster', 'poster_preview')
+        }),
+        ('Описание', {
+            'fields': ('description',)
+        }),
+    )
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(is_cartoon=True)
@@ -132,10 +154,31 @@ class GenreAdmin(admin.ModelAdmin):
 
 @admin.register(Showtime)
 class ShowtimeAdmin(admin.ModelAdmin):
-    list_display   = ['film', 'date_time', 'hall_name', 'price']
+    list_display   = ['film', 'date_time', 'hall_name', 'price', 'rows', 'seats_per_row']
     search_fields  = ['film__title']
     list_filter    = ['hall_name', 'date_time', 'film']
     date_hierarchy = 'date_time'
+    fields         = ['film', 'date_time', 'hall_name', 'price', 'rows', 'seats_per_row']
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Auto-generate tickets when showtime is created or rows/seats changed
+        _regenerate_tickets(obj)
+
+
+def _regenerate_tickets(showtime):
+    """Create missing Ticket rows for the showtime (does not delete existing ones)."""
+    existing = set(
+        Ticket.objects.filter(showtime=showtime)
+        .values_list('row_number', 'seat_number')
+    )
+    new_tickets = []
+    for row in range(1, showtime.rows + 1):
+        for seat in range(1, showtime.seats_per_row + 1):
+            if (row, seat) not in existing:
+                new_tickets.append(Ticket(showtime=showtime, row_number=row, seat_number=seat))
+    if new_tickets:
+        Ticket.objects.bulk_create(new_tickets)
 
 
 @admin.register(Ticket)
@@ -204,3 +247,91 @@ class FeaturedCartoonAdmin(admin.ModelAdmin):
             )
         return '—'
     film_poster.short_description = 'Постер'
+
+
+@admin.register(PromoBanner)
+class PromoBannerAdmin(admin.ModelAdmin):
+    list_display       = ['promo_preview', 'title', 'subtitle', 'genre', 'rating', 'duration_display_col', 'is_active']
+    list_display_links = ['title']
+    list_editable      = ['is_active']
+    readonly_fields    = ['promo_preview', 'duration_display_col']
+
+    fieldsets = (
+        ('Контент', {
+            'fields': ('badge_text', 'title', 'subtitle', 'description', 'genre', 'rating', 'duration')
+        }),
+        ('Изображение', {
+            'fields': ('image', 'promo_preview')
+        }),
+        ('Настройки', {
+            'fields': ('button_url', 'is_active')
+        }),
+    )
+
+    def promo_preview(self, obj):
+        if obj.image:
+            return mark_safe(
+                f'<img src="{obj.image.url}" width="240" height="135" '
+                f'style="object-fit:cover; border-radius:8px;" />'
+            )
+        return '—'
+    promo_preview.short_description = 'Превью'
+
+    def duration_display_col(self, obj):
+        return obj.duration_display()
+    duration_display_col.short_description = 'Длительность'
+
+
+# ── SliderItem — карусель на главной ─────────────────────────────────────────
+
+@admin.register(SliderItem)
+class SliderItemAdmin(admin.ModelAdmin):
+    list_display       = ['order', 'film_poster', 'film', 'film_genre', 'film_rating']
+    list_display_links = ['film']
+    ordering           = ['order']
+
+    def film_poster(self, obj):
+        if obj.film.poster:
+            return mark_safe(
+                f'<img src="{obj.film.poster.url}" width="40" height="55" '
+                f'style="object-fit:cover; border-radius:4px;" />'
+            )
+        return '—'
+    film_poster.short_description = 'Постер'
+
+    def film_genre(self, obj):
+        return obj.film.genre or '—'
+    film_genre.short_description = 'Жанр'
+
+    def film_rating(self, obj):
+        return obj.film.rating
+    film_rating.short_description = 'Рейтинг'
+
+
+# ── BannerItem — промо-баннер на главной ─────────────────────────────────────
+
+@admin.register(BannerItem)
+class BannerItemAdmin(admin.ModelAdmin):
+    list_display       = ['film_poster', 'film', 'film_genre', 'film_rating', 'film_duration']
+    list_display_links = ['film']
+
+    def film_poster(self, obj):
+        if obj.film.poster:
+            return mark_safe(
+                f'<img src="{obj.film.poster.url}" width="80" height="45" '
+                f'style="object-fit:cover; border-radius:4px;" />'
+            )
+        return '—'
+    film_poster.short_description = 'Постер'
+
+    def film_genre(self, obj):
+        return obj.film.genre or '—'
+    film_genre.short_description = 'Жанр'
+
+    def film_rating(self, obj):
+        return obj.film.rating
+    film_rating.short_description = 'Рейтинг'
+
+    def film_duration(self, obj):
+        return obj.film.duration_display()
+    film_duration.short_description = 'Длительность'

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бронирование подтверждено — Синема Сити</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#FF1E56', pinkHover: '#D6103F',
+                            darkBg: '#08080A', cardBg: '#111115',
+                            border: '#1E1E26', textGray: '#9CA3AF'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #08080A; color: #fff; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- ШАПКА -->
+<header class="sticky top-0 z-50 bg-[#08080A]/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="{% url 'index' %}" class="flex items-center space-x-2 group">
+            <div class="bg-gradient-to-r from-brand-pink to-pink-500 w-9 h-9 rounded-xl flex items-center justify-center shadow-lg">
+                <i class="fa-solid fa-film text-white text-base"></i>
+            </div>
+            <div>
+                <h1 class="font-heading font-black text-base tracking-wider text-white">СИНЕМА <span class="text-brand-pink">СИТИ</span></h1>
+                <p class="text-[9px] text-brand-textGray tracking-widest uppercase leading-none">Онлайн кинотеатр</p>
+            </div>
+        </a>
+    </div>
+</header>
+
+<main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-lg">
+
+        {% if booked %}
+        <!-- Успех -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 mx-auto rounded-full bg-green-500/15 border-2 border-green-500 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-check text-3xl text-green-400"></i>
+            </div>
+            <h1 class="font-heading font-black text-3xl text-white mb-2">Бронирование успешно!</h1>
+            <p class="text-brand-textGray text-sm">Ваши билеты забронированы. Приятного просмотра!</p>
+        </div>
+
+        <!-- Карточка билета -->
+        <div class="p-6 rounded-2xl bg-brand-cardBg border border-brand-border mb-6">
+            <div class="flex items-start gap-4 mb-5 pb-5 border-b border-brand-border">
+                {% if showtime.film.poster %}
+                <img src="{{ showtime.film.poster.url }}" alt="" class="w-16 rounded-xl object-cover flex-shrink-0" style="aspect-ratio:2/3">
+                {% endif %}
+                <div>
+                    <div class="font-heading font-bold text-lg text-white">{{ showtime.film.title }}</div>
+                    <div class="text-brand-textGray text-sm mt-1">{{ showtime.date_time|date:"j E Y, H:i" }}</div>
+                    <div class="text-brand-textGray text-sm">Зал: {{ showtime.hall_name }}</div>
+                </div>
+            </div>
+
+            <div class="space-y-2 mb-5">
+                {% for ticket in booked %}
+                <div class="flex justify-between text-sm">
+                    <span class="text-brand-textGray">Ряд {{ ticket.row_number }}, Место {{ ticket.seat_number }}</span>
+                    <span class="text-white font-semibold">{{ showtime.price|floatformat:0 }} ₽</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="flex justify-between pt-4 border-t border-brand-border">
+                <span class="font-semibold text-white">Итого</span>
+                <span class="font-bold text-xl text-brand-pink">{{ total|floatformat:0 }} ₽</span>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Ошибка: никакие места не были выбраны или уже заняты -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 mx-auto rounded-full bg-brand-pink/15 border-2 border-brand-pink flex items-center justify-center mb-4">
+                <i class="fa-solid fa-exclamation text-3xl text-brand-pink"></i>
+            </div>
+            <h1 class="font-heading font-black text-3xl text-white mb-2">Не удалось забронировать</h1>
+            <p class="text-brand-textGray text-sm">Выбранные места уже заняты или не были переданы.</p>
+        </div>
+        {% endif %}
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="{% url 'film_detail' showtime.film.slug %}"
+               class="px-6 py-3 rounded-xl border border-brand-border text-white font-semibold text-sm hover:bg-brand-cardBg transition-colors text-center">
+                Вернуться к фильму
+            </a>
+            <a href="{% url 'index' %}"
+               class="px-6 py-3 rounded-xl bg-brand-pink hover:bg-brand-pinkHover text-white font-bold text-sm transition-colors text-center">
+                На главную
+            </a>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
