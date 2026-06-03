@@ -188,34 +188,6 @@ class TicketAdmin(admin.ModelAdmin):
     search_fields = ['showtime__film__title']
 
 
-@admin.register(Slider)
-class SliderAdmin(admin.ModelAdmin):
-    list_display  = ['slide_preview', 'title', 'genre', 'duration', 'rating', 'order', 'is_active']
-    list_display_links = ['title']
-    list_editable = ['order', 'is_active']
-    readonly_fields = ['slide_preview']
-
-    fieldsets = (
-        ('Контент', {
-            'fields': ('title', 'description', 'genre', 'duration', 'rating')
-        }),
-        ('Изображение', {
-            'fields': ('image', 'slide_preview')
-        }),
-        ('Настройки', {
-            'fields': ('order', 'is_active')
-        }),
-    )
-
-    def slide_preview(self, obj):
-        if obj.image:
-            return mark_safe(
-                f'<img src="{obj.image.url}" width="160" height="90" '
-                f'style="object-fit:cover; border-radius:6px;" />'
-            )
-        return '—'
-    slide_preview.short_description = 'Превью'
-
 
 @admin.register(FeaturedFilm)
 class FeaturedFilmAdmin(admin.ModelAdmin):
@@ -247,39 +219,6 @@ class FeaturedCartoonAdmin(admin.ModelAdmin):
             )
         return '—'
     film_poster.short_description = 'Постер'
-
-
-@admin.register(PromoBanner)
-class PromoBannerAdmin(admin.ModelAdmin):
-    list_display       = ['promo_preview', 'title', 'subtitle', 'genre', 'rating', 'duration_display_col', 'is_active']
-    list_display_links = ['title']
-    list_editable      = ['is_active']
-    readonly_fields    = ['promo_preview', 'duration_display_col']
-
-    fieldsets = (
-        ('Контент', {
-            'fields': ('badge_text', 'title', 'subtitle', 'description', 'genre', 'rating', 'duration')
-        }),
-        ('Изображение', {
-            'fields': ('image', 'promo_preview')
-        }),
-        ('Настройки', {
-            'fields': ('button_url', 'is_active')
-        }),
-    )
-
-    def promo_preview(self, obj):
-        if obj.image:
-            return mark_safe(
-                f'<img src="{obj.image.url}" width="240" height="135" '
-                f'style="object-fit:cover; border-radius:8px;" />'
-            )
-        return '—'
-    promo_preview.short_description = 'Превью'
-
-    def duration_display_col(self, obj):
-        return obj.duration_display()
-    duration_display_col.short_description = 'Длительность'
 
 
 # ── SliderItem — карусель на главной ─────────────────────────────────────────
