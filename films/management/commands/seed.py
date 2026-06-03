@@ -63,26 +63,28 @@ def _wide(seed: int) -> ContentFile | None:
 
 def _make_film(is_cartoon=False, fetch_images=True) -> Film:
     film = Film(
-        title       = fake.catch_phrase()[:100],
-        year        = random.randint(2000, 2026),
-        genre       = random.choice(GENRES),
-        country     = random.choice([c[0] for c in COUNTRY_CHOICES]),
-        description = fake.text(max_nb_chars=400),
-        rating      = round(random.uniform(5.0, 9.5), 1),
-        duration    = random.randint(70, 180),
-        quality     = random.choice(QUALITIES),
-        price       = random.choice([200, 300, 400, 500, 600]),
-        age_rating  = random.choice(AGE_RATINGS),
-        is_cartoon  = is_cartoon,
-        is_featured = False,
+        title=fake.catch_phrase()[:50],
+        year=random.randint(2000, 2026),
+        genre=random.choice(GENRES),
+        country=random.choice([c[0] for c in COUNTRY_CHOICES]),
+        description=fake.text(max_nb_chars=400),
+        rating=round(random.uniform(5.0, 9.5), 1),
+        duration=random.randint(70, 180),
+        quality=random.choice(QUALITIES),
+        price=random.choice([200, 300, 400, 500, 600]),
+        age_rating=random.choice(AGE_RATINGS),
+        is_cartoon=is_cartoon,
+        is_featured=False,
     )
+
     if fetch_images:
         img = _poster(random.randint(1, 9999))
         if img:
-            film.poster.save(img.name, img, save=False)
+            # ПРЯМОЕ ПРИСВОЕНИЕ: файл сохранится автоматически вместе с моделью
+            film.poster = img
+
     film.save()
     return film
-
 
 def _make_showtime(film: Film):
     hall_name, rows, seats, price = random.choice(HALLS)
