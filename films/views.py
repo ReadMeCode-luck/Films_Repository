@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 from rest_framework.generics import ListAPIView
 from django.template.context_processors import csrf
 from django.db.models import Q
 from collections import defaultdict
-from .models import Film, Genre, SliderItem, BannerItem, FeaturedFilm, FeaturedCartoon, Showtime, Ticket, COUNTRY_CHOICES
+from .models import Film, Genre, SliderItem, BannerItem, FeaturedFilm, FeaturedCartoon, Showtime, Ticket, Favorite, COUNTRY_CHOICES
 
 YEAR_MIN = 1895
 YEAR_MAX = 2026
@@ -56,9 +57,7 @@ def _apply_filters(films, request):
     if year_to.isdigit():
         films = films.filter(year__lte=int(year_to))
     if search_query:
-        films = films.filter(
-            Q(title__icontains=search_query) | Q(description__icontains=search_query)
-        )
+        films = films.filter(title__istartswith=search_query)
 
     allowed_sort = ['-rating', 'rating', '-year', 'year', 'title', '-title']
     if sort_by in allowed_sort:
@@ -128,10 +127,46 @@ def film_detail(request, slug):
         for date, items in sorted(grouped.items())
     ]
 
+    is_favorited = (
+        request.user.is_authenticated
+        and Favorite.objects.filter(user=request.user, film=film).exists()
+    )
+
     return render(request, 'film_detail.html', {
         'film': film,
         'showtimes_by_date': showtimes_by_date,
+        'is_favorited': is_favorited,
     })
+
+
+@login_required
+@require_POST
+def toggle_favorite(request, film_id):
+    film = get_object_or_404(Film, pk=film_id)
+    fav, created = Favorite.objects.get_or_create(user=request.user, film=film)
+    if not created:
+        fav.delete()
+        favorited = False
+    else:
+        favorited = True
+    return JsonResponse({'favorited': favorited})
+
+
+@login_required
+@require_POST
+def remove_favorite(request, film_id):
+    """Удалить конкретный фильм из избранного."""
+    film = get_object_or_404(Film, pk=film_id)
+    Favorite.objects.filter(user=request.user, film=film).delete()
+    return JsonResponse({'removed': True})
+
+
+@login_required
+@require_POST
+def clear_all_favorites(request):
+    """Удалить всё избранное текущего пользователя."""
+    Favorite.objects.filter(user=request.user).delete()
+    return JsonResponse({'cleared': True})
 
 
 def seat_selection(request, showtime_id):
@@ -153,6 +188,7 @@ def seat_selection(request, showtime_id):
 @require_POST
 def book_seats(request, showtime_id):
     """Mark selected seats as bought and show confirmation."""
+    from django.utils import timezone
     showtime = get_object_or_404(Showtime, pk=showtime_id)
     seat_ids = request.POST.getlist('seats')  # list of ticket PKs
 
@@ -161,6 +197,9 @@ def book_seats(request, showtime_id):
         try:
             ticket = Ticket.objects.get(pk=int(tid), showtime=showtime, is_bought=False)
             ticket.is_bought = True
+            ticket.bought_at = timezone.now()
+            if request.user.is_authenticated:
+                ticket.user = request.user
             ticket.save()
             booked.append(ticket)
         except (Ticket.DoesNotExist, ValueError):
@@ -174,8 +213,30 @@ def book_seats(request, showtime_id):
     })
 
 
+@login_required
+def my_tickets(request):
+    tickets = (
+        Ticket.objects
+        .filter(user=request.user, is_bought=True)
+        .select_related('showtime__film')
+        .order_by('-bought_at')
+    )
+    return render(request, 'my_tickets.html', {'tickets': tickets})
+
+
 class FilmList(ListAPIView):
     queryset = Film.objects.all()
+
+
+def live_search(request):
+    query = request.GET.get('q', '').strip()
+    results = []
+    if len(query) >= 2:
+        films = Film.objects.filter(title__istartswith=query).values(
+            'id', 'title', 'year', 'rating', 'slug'
+        )[:8]
+        results = list(films)
+    return JsonResponse({'results': results})
 
 
 def entrance(request):

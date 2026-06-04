@@ -97,6 +97,13 @@
         .custom-checkbox input[type="checkbox"] {
             display: none;
         }
+
+        /* Одинаковая высота постеров в слайдере */
+        .card-poster-wrapper {
+            height: 280px !important;
+            min-height: 280px !important;
+            aspect-ratio: unset !important;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-brand-pink selection:text-white">
@@ -127,28 +134,38 @@
                 <a href="#" class="text-white hover:text-brand-pink transition-colors">Главная</a>
                 <a href="{% url 'films' %}" class="text-brand-textGray hover:text-white transition-colors">Фильмы</a>
                 <a href="{% url 'cartoons' %}" class="text-brand-textGray hover:text-white transition-colors">Мультфильмы</a>
-                <a href="#" class="text-brand-textGray hover:text-white transition-colors">Актеры</a>
+                <a href="{% url 'my_tickets' %}" class="text-brand-textGray hover:text-white transition-colors">Билеты</a>
                 <a href="#" class="text-brand-textGray hover:text-white transition-colors">О нас</a>
             </nav>
         </div>
 
-        <!-- Правая часть: Логин/Регистрация/Поиск мобильный -->
+        <!-- Правая часть: Поиск + Логин/Регистрация -->
         <div class="flex items-center space-x-4">
-            <div class="relative hidden sm:block">
-                <input type="text" placeholder="Быстрый поиск..." class="bg-white/5 border border-white/10 focus:border-brand-pink text-sm text-white placeholder-gray-500 rounded-full py-2 pl-10 pr-4 w-48 focus:w-64 focus:outline-none transition-all duration-300">
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-gray-500"></i>
+
+            <!-- Живой поиск -->
+            <div class="relative hidden sm:block" id="live-search-wrapper">
+                <input
+                    type="text"
+                    id="live-search-input"
+                    placeholder="Быстрый поиск..."
+                    autocomplete="off"
+                    class="bg-white/5 border border-white/10 focus:border-brand-pink text-sm text-white placeholder-gray-500 rounded-full py-2 pl-10 pr-4 w-48 focus:w-64 focus:outline-none transition-all duration-300">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs text-gray-500 pointer-events-none"></i>
+                <div id="live-search-dropdown"
+                     class="absolute top-full mt-2 left-0 w-72 bg-[#111115] border border-[#1E1E26] rounded-2xl shadow-2xl overflow-hidden z-50 hidden">
+                    <ul id="live-search-results"></ul>
+                    <div id="live-search-empty" class="hidden px-4 py-3 text-sm text-[#9CA3AF] text-center">
+                        Ничего не найдено
+                    </div>
+                </div>
             </div>
 
             <!-- Django блок авторизации -->
             {% if user.is_authenticated %}
-                <div class="flex items-center space-x-3 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span class="text-sm font-semibold text-white">{{ user.username }}</span>
-                    <span class="text-white/20">|</span>
-                    <form method="post" action="{% url 'logout' %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-xs font-bold text-brand-pink hover:text-white transition-colors">Выход</button>
-                    </form>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'profile' user.username %}" class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold hover:scale-105 transition-transform">{{ user.username|first|upper }}</a>
+                    <a href="{% url 'profile' user.username %}" class="text-sm text-white font-medium hidden sm:block hover:text-brand-pink transition-colors">{{ user.username }}</a>
+                    <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
                 </div>
             {% else %}
                 <a href="{% url 'entrance' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-brand-pink/20 flex items-center space-x-2">
@@ -507,7 +524,7 @@
             <div class="absolute inset-0 bg-gradient-to-r from-[#08080A] via-[#08080A]/90 to-transparent z-10"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-[#08080A] via-transparent to-transparent z-10"></div>
             <img src="{{ banner_item.film.poster.url }}" alt="{{ banner_item.film.title }}"
-                 class="w-full h-full object-cover object-right opacity-80 md:opacity-100">
+                 class="w-full h-full object-cover object-center">
         </div>
 
         <div class="promo-content relative z-20 max-w-xl h-full flex flex-col justify-center p-8 md:p-12 space-y-4">
@@ -727,6 +744,71 @@
         dots.forEach((dot, i) => dot.addEventListener('click', () => updateSlider(i)));
         updateSlider(0);
     }
+
+    // ── Живой поиск ────────────────────────────────────────────────────────────
+    (function () {
+        const input    = document.getElementById('live-search-input');
+        const dropdown = document.getElementById('live-search-dropdown');
+        const list     = document.getElementById('live-search-results');
+        const empty    = document.getElementById('live-search-empty');
+
+        if (!input) return;
+
+        let timer = null;
+
+        input.addEventListener('input', () => {
+            clearTimeout(timer);
+            const q = input.value.trim();
+            if (q.length < 2) { dropdown.classList.add('hidden'); return; }
+            timer = setTimeout(() => fetchResults(q), 250);
+        });
+
+        function fetchResults(q) {
+            fetch(`/search/live/?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(data => render(data.results))
+                .catch(() => dropdown.classList.add('hidden'));
+        }
+
+        function render(results) {
+            list.innerHTML = '';
+            if (results.length === 0) {
+                empty.classList.remove('hidden');
+                list.classList.add('hidden');
+            } else {
+                empty.classList.add('hidden');
+                list.classList.remove('hidden');
+                results.forEach(film => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <a href="/films/${film.slug}/"
+                           class="flex items-center justify-between px-4 py-2.5 hover:bg-white/5 transition-colors group">
+                            <span class="text-sm text-white font-medium group-hover:text-brand-pink transition-colors truncate max-w-[160px]">
+                                ${esc(film.title)}
+                            </span>
+                            <span class="text-xs text-[#9CA3AF] whitespace-nowrap ml-2">
+                                ${film.year ?? ''}${film.rating ? ' · ⭐ ' + film.rating : ''}
+                            </span>
+                        </a>`;
+                    list.appendChild(li);
+                });
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        function esc(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        document.addEventListener('click', e => {
+            if (!document.getElementById('live-search-wrapper').contains(e.target))
+                dropdown.classList.add('hidden');
+        });
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Escape') dropdown.classList.add('hidden');
+        });
+    })();
 
 </script>
 </body>

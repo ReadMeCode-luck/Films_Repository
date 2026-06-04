@@ -162,20 +162,21 @@ class Command(BaseCommand):
             if pos not in used_pos:
                 FeaturedCartoon.objects.get_or_create(film=cartoon, defaults={'position': pos})
 
-        # SliderItem — до 5 фильмов в карусели (с постером)
+        # SliderItem — 4 фильма в карусели
         self.stdout.write('  → Слайдер (герой-карусель)...')
-        films_with_poster = [f for f in films if f.poster]
         used_orders = set(SliderItem.objects.values_list('order', flat=True))
-        for order, film in enumerate(random.sample(films_with_poster, min(5, len(films_with_poster))), 1):
-            if order not in used_orders and not SliderItem.objects.filter(film=film).exists():
+        slider_candidates = [f for f in films if not SliderItem.objects.filter(film=f).exists()]
+        for order, film in enumerate(random.sample(slider_candidates, min(4, len(slider_candidates))), 1):
+            if order not in used_orders:
                 SliderItem.objects.create(film=film, order=order)
 
         # BannerItem — один промо-баннер
         self.stdout.write('  → Промо-баннер...')
         if not BannerItem.objects.exists():
-            banner_candidates = [f for f in films if f.poster and not SliderItem.objects.filter(film=f).exists()]
+            slider_film_ids = set(SliderItem.objects.values_list('film_id', flat=True))
+            banner_candidates = [f for f in films if f.id not in slider_film_ids]
             if not banner_candidates:
-                banner_candidates = [f for f in films if f.poster]
+                banner_candidates = films
             if banner_candidates:
                 BannerItem.objects.create(film=random.choice(banner_candidates))
 

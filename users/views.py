@@ -1,9 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from .forms import RegisterForm, LoginForm, ForgotPasswordForm
 from .services import send_password_reset_email
 from .models import CustomUser
+from films.models import Favorite
 
 
 def login_view(request):
@@ -66,3 +67,14 @@ def forgot_password_view(request):
 
     # GET-запрос на этот URL не нужен — редиректим на логин
     return redirect('login')
+
+
+def profile_view(request, username):
+    profile_user = get_object_or_404(CustomUser, username=username)
+    favorites = Favorite.objects.filter(user=profile_user).select_related('film').order_by('-created_at')
+    favorites_count = favorites.count()
+    return render(request, 'profile.html', {
+        'profile_user': profile_user,
+        'favorites': favorites,
+        'favorites_count': favorites_count,
+    })

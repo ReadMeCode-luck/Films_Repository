@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои билеты — Синема Сити</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#FF1E56', pinkHover: '#D6103F',
+                            darkBg: '#08080A', cardBg: '#111115',
+                            border: '#1E1E26', textGray: '#9CA3AF'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #08080A; color: #fff; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #08080A; }
+        ::-webkit-scrollbar-thumb { background: #1F1F27; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF1E56; }
+
+        /* Ticket card */
+        .ticket {
+            display: flex;
+            background: #111115;
+            border: 1px solid #1E1E26;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .ticket:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255, 30, 86, 0.15);
+        }
+
+        /* Left colored strip */
+        .ticket-strip {
+            width: 6px;
+            background: linear-gradient(180deg, #FF1E56 0%, #a855f7 100%);
+            flex-shrink: 0;
+        }
+
+        /* Poster side */
+        .ticket-poster {
+            width: 100px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .ticket-poster img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+        .ticket-poster-placeholder {
+            width: 100%; height: 100%;
+            background: #1a1a22;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Perforated divider */
+        .ticket-divider {
+            width: 1px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #1E1E26 0px, #1E1E26 8px,
+                transparent 8px, transparent 14px
+            );
+            flex-shrink: 0;
+            margin: 16px 0;
+        }
+
+        /* Stub (right side) */
+        .ticket-stub {
+            width: 90px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 16px 10px;
+            border-left: 1px dashed #1E1E26;
+        }
+
+        /* Barcode lines */
+        .barcode {
+            display: flex;
+            gap: 2px;
+            height: 40px;
+            align-items: flex-end;
+        }
+        .barcode span {
+            background: #fff;
+            border-radius: 1px;
+            width: 2px;
+        }
+
+        /* Status badge */
+        .badge-valid {
+            background: rgba(34,197,94,0.12);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: #4ade80;
+        }
+        .badge-past {
+            background: rgba(156,163,175,0.08);
+            border: 1px solid rgba(156,163,175,0.2);
+            color: #9CA3AF;
+        }
+
+        /* Hole notches */
+        .ticket::before,
+        .ticket::after {
+            content: '';
+            position: absolute;
+            width: 18px; height: 18px;
+            background: #08080A;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 5;
+        }
+        .ticket::before { right: 78px; border: 1px solid #1E1E26; }
+        .ticket::after  { right: 78px; display: none; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+<!-- ШАПКА -->
+<header class="sticky top-0 z-50 bg-[#08080A]/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="{% url 'index' %}" class="flex items-center space-x-2 group">
+            <div class="bg-gradient-to-r from-brand-pink to-pink-500 w-9 h-9 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
+                <i class="fa-solid fa-film text-white text-base"></i>
+            </div>
+            <div>
+                <h1 class="font-heading font-black text-base tracking-wider text-white">СИНЕМА <span class="text-brand-pink">СИТИ</span></h1>
+                <p class="text-[9px] text-brand-textGray tracking-widest uppercase leading-none">Онлайн кинотеатр</p>
+            </div>
+        </a>
+        <nav class="hidden md:flex items-center space-x-6 text-sm font-semibold">
+            <a href="{% url 'index' %}" class="text-brand-textGray hover:text-white transition-colors">Главная</a>
+            <a href="{% url 'films' %}" class="text-brand-textGray hover:text-white transition-colors">Фильмы</a>
+            <a href="{% url 'cartoons' %}" class="text-brand-textGray hover:text-white transition-colors">Мультфильмы</a>
+            <a href="{% url 'my_tickets' %}" class="text-white transition-colors">Билеты</a>
+        </nav>
+        <div class="flex items-center gap-3">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' user.username %}" class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold hover:scale-105 transition-transform">{{ user.username|first|upper }}</a>
+                <a href="{% url 'profile' user.username %}" class="text-sm text-white font-medium hidden sm:block hover:text-brand-pink transition-colors">{{ user.username }}</a>
+                <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket text-xs"></i> Войти
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+
+    <!-- Заголовок -->
+    <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-xl bg-brand-pink/15 border border-brand-pink/30 flex items-center justify-center">
+            <i class="fa-solid fa-ticket text-brand-pink"></i>
+        </div>
+        <div>
+            <h1 class="font-heading font-black text-2xl text-white">Мои билеты</h1>
+            <p class="text-brand-textGray text-sm">{{ tickets|length }} {{ tickets|length|pluralize:"билет,билета,билетов" }}</p>
+        </div>
+    </div>
+
+    {% if tickets %}
+    <div class="flex flex-col gap-4">
+        {% for ticket in tickets %}
+        {% with st=ticket.showtime film=ticket.showtime.film %}
+        {% now "Y-m-d H:i" as now_str %}
+        <div class="ticket">
+            <div class="ticket-strip"></div>
+
+            <!-- Постер -->
+            <div class="ticket-poster" style="min-height: 130px;">
+                {% if film.poster %}
+                    <img src="{{ film.poster.url }}" alt="{{ film.title }}">
+                {% else %}
+                    <div class="ticket-poster-placeholder">
+                        <i class="fa-solid fa-film text-2xl text-brand-border"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Основная информация -->
+            <div class="flex-1 px-5 py-4 flex flex-col justify-between min-w-0">
+                <div>
+                    <div class="flex items-start justify-between gap-3 mb-1">
+                        <a href="{% url 'film_detail' film.slug %}" class="font-heading font-bold text-white text-base leading-snug hover:text-brand-pink transition-colors line-clamp-2">
+                            {{ film.title }}
+                        </a>
+                        <span class="text-xs px-2 py-0.5 rounded-md font-semibold flex-shrink-0
+                            {% if st.date_time > ticket.bought_at %}badge-valid{% else %}badge-past{% endif %}">
+                            {% if st.date_time > ticket.bought_at %}Активен{% else %}Завершён{% endif %}
+                        </span>
+                    </div>
+                    <div class="text-brand-textGray text-xs mb-3">{{ film.genre }}{% if film.year %} · {{ film.year }}{% endif %}</div>
+                </div>
+
+                <!-- Детали -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-xs">
+                    <div>
+                        <div class="text-brand-textGray mb-0.5">Дата сеанса</div>
+                        <div class="text-white font-semibold">{{ st.date_time|date:"d.m.Y" }}</div>
+                    </div>
+                    <div>
+                        <div class="text-brand-textGray mb-0.5">Время</div>
+                        <div class="text-brand-pink font-bold text-sm">{{ st.date_time|date:"H:i" }}</div>
+                    </div>
+                    <div>
+                        <div class="text-brand-textGray mb-0.5">Зал</div>
+                        <div class="text-white font-semibold">{{ st.hall_name }}</div>
+                    </div>
+                    <div>
+                        <div class="text-brand-textGray mb-0.5">Цена</div>
+                        <div class="text-white font-semibold">{{ st.price|floatformat:0 }} ₽</div>
+                    </div>
+                    <div>
+                        <div class="text-brand-textGray mb-0.5">Ряд</div>
+                        <div class="text-white font-semibold">{{ ticket.row_number }}</div>
+                    </div>
+                    <div>
+                        <div class="text-brand-textGray mb-0.5">Место</div>
+                        <div class="text-white font-semibold">{{ ticket.seat_number }}</div>
+                    </div>
+                    {% if ticket.bought_at %}
+                    <div class="col-span-2">
+                        <div class="text-brand-textGray mb-0.5">Куплен</div>
+                        <div class="text-white font-semibold">{{ ticket.bought_at|date:"d.m.Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Stub (отрывной корешок) -->
+            <div class="ticket-stub">
+                <!-- Barcode decoration -->
+                <div class="barcode mb-2">
+                    {% for h in "13579864215379" %}
+                    <span style="height: {% cycle '28px' '38px' '22px' '34px' '18px' '32px' '26px' %}"></span>
+                    {% endfor %}
+                </div>
+                <div class="text-[10px] text-brand-textGray text-center font-mono leading-tight">#{{ ticket.pk|stringformat:"06d" }}</div>
+                <div class="mt-2 text-[9px] text-brand-textGray text-center uppercase tracking-widest">Синема Сити</div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="py-24 text-center rounded-2xl bg-brand-cardBg border border-brand-border">
+        <div class="w-16 h-16 rounded-2xl bg-brand-pink/10 border border-brand-pink/20 flex items-center justify-center mx-auto mb-5">
+            <i class="fa-solid fa-ticket text-3xl text-brand-pink/50"></i>
+        </div>
+        <p class="text-white font-semibold text-lg mb-1">Билетов пока нет</p>
+        <p class="text-brand-textGray text-sm mb-6">Купите билет на понравившийся сеанс</p>
+        <a href="{% url 'films' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-pink hover:bg-brand-pinkHover text-white font-semibold rounded-xl transition-colors">
+            <i class="fa-solid fa-film text-sm"></i> Смотреть фильмы
+        </a>
+    </div>
+    {% endif %}
+
+</main>
+
+<!-- ФУТЕР -->
+<footer class="mt-16 border-t border-brand-border py-8 text-center text-brand-textGray text-sm">
+    © 2026 Синема Сити. Все права защищены.
+</footer>
+</body>
+</html>

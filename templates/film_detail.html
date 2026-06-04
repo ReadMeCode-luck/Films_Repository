@@ -56,13 +56,13 @@
             <a href="{% url 'index' %}" class="text-brand-textGray hover:text-white transition-colors">Главная</a>
             <a href="{% url 'films' %}" class="text-brand-textGray hover:text-white transition-colors">Фильмы</a>
             <a href="{% url 'cartoons' %}" class="text-brand-textGray hover:text-white transition-colors">Мультфильмы</a>
-            <a href="#" class="text-brand-textGray hover:text-white transition-colors">Актёры</a>
+            <a href="{% url 'my_tickets' %}" class="text-brand-textGray hover:text-white transition-colors">Билеты</a>
             <a href="#" class="text-brand-textGray hover:text-white transition-colors">О нас</a>
         </nav>
         <div class="flex items-center gap-3">
             {% if user.is_authenticated %}
-                <span class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold">{{ user.username|first|upper }}</span>
-                <span class="text-sm text-white font-medium hidden sm:block">{{ user.username }}</span>
+                <a href="{% url 'profile' user.username %}" class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold hover:scale-105 transition-transform">{{ user.username|first|upper }}</a>
+                <a href="{% url 'profile' user.username %}" class="text-sm text-white font-medium hidden sm:block hover:text-brand-pink transition-colors">{{ user.username }}</a>
                 <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
             {% else %}
                 <a href="{% url 'login' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
@@ -108,6 +108,23 @@
                 <i class="fa-solid fa-ticket"></i>
                 Купить билеты
             </a>
+
+            <!-- Кнопка "Избранное" -->
+            {% if user.is_authenticated %}
+            <button
+                id="favBtn"
+                onclick="toggleFavorite({{ film.id }})"
+                class="mt-2 w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-xl transition-all border {% if is_favorited %}bg-brand-pink/15 border-brand-pink text-brand-pink{% else %}bg-transparent border-brand-border text-brand-textGray hover:border-brand-pink hover:text-brand-pink{% endif %}"
+            >
+                <i id="favIcon" class="{% if is_favorited %}fa-solid fa-bookmark{% else %}fa-regular fa-bookmark{% endif %}"></i>
+                <span id="favText">{% if is_favorited %}В избранном{% else %}В избранное{% endif %}</span>
+            </button>
+            {% else %}
+            <a href="{% url 'login' %}" class="mt-2 w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-xl transition-all border border-brand-border text-brand-textGray hover:border-brand-pink hover:text-brand-pink">
+                <i class="fa-regular fa-bookmark"></i>
+                В избранное
+            </a>
+            {% endif %}
 
             <!-- Рейтинг -->
             <div class="mt-4 p-4 rounded-xl bg-brand-cardBg border border-brand-border">
@@ -250,7 +267,7 @@
 
 <!-- ФУТЕР -->
 <footer class="mt-16 border-t border-brand-border py-8 text-center text-brand-textGray text-sm">
-    <span class="font-heading font-black text-brand-pink">СИНЕМА СИТИ</span> &copy; {{ film.year }}
+    © 2026 Синема Сити. Все права защищены.
 </footer>
 
 <script>
@@ -260,6 +277,44 @@ function switchDate(date) {
     const panel = document.getElementById('panel-' + date);
     if (panel) panel.style.display = '';
     document.querySelectorAll('.tab-btn[data-date="' + date + '"]').forEach(b => b.classList.add('active'));
+}
+
+function getCookie(name) {
+    let v = null;
+    document.cookie.split(';').forEach(c => {
+        const [k, val] = c.trim().split('=');
+        if (k === name) v = decodeURIComponent(val);
+    });
+    return v;
+}
+
+function toggleFavorite(filmId) {
+    const btn = document.getElementById('favBtn');
+    const icon = document.getElementById('favIcon');
+    const text = document.getElementById('favText');
+    if (!btn) return;
+    btn.disabled = true;
+    fetch(`/films/${filmId}/favorite/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.favorited) {
+            icon.className = 'fa-solid fa-bookmark';
+            text.textContent = 'В избранном';
+            btn.className = btn.className.replace('border-brand-border text-brand-textGray hover:border-brand-pink hover:text-brand-pink', 'border-brand-pink text-brand-pink');
+            btn.classList.add('bg-brand-pink/15', 'border-brand-pink', 'text-brand-pink');
+            btn.classList.remove('border-brand-border', 'text-brand-textGray');
+        } else {
+            icon.className = 'fa-regular fa-bookmark';
+            text.textContent = 'В избранное';
+            btn.classList.remove('bg-brand-pink/15', 'border-brand-pink', 'text-brand-pink');
+            btn.classList.add('border-brand-border', 'text-brand-textGray');
+        }
+        btn.disabled = false;
+    })
+    .catch(() => { btn.disabled = false; });
 }
 </script>
 </body>

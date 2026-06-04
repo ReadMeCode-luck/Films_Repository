@@ -70,8 +70,8 @@
         </a>
         <div class="flex items-center gap-3">
             {% if user.is_authenticated %}
-                <span class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold">{{ user.username|first|upper }}</span>
-                <span class="text-sm text-white font-medium hidden sm:block">{{ user.username }}</span>
+                <a href="{% url 'profile' user.username %}" class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold hover:scale-105 transition-transform">{{ user.username|first|upper }}</a>
+                <a href="{% url 'profile' user.username %}" class="text-sm text-white font-medium hidden sm:block hover:text-brand-pink transition-colors">{{ user.username }}</a>
                 <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
             {% else %}
                 <a href="{% url 'login' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Войти</a>

@@ -89,7 +89,7 @@
             <a href="{% url 'index' %}" class="text-brand-textGray hover:text-white transition-colors">Главная</a>
             <a href="{% url 'films' %}" class="{% if page_type == 'films' %}text-white border-b-2 border-brand-pink pb-0.5{% else %}text-brand-textGray hover:text-white transition-colors{% endif %}">Фильмы</a>
             <a href="{% url 'cartoons' %}" class="{% if page_type == 'cartoons' %}text-white border-b-2 border-brand-pink pb-0.5{% else %}text-brand-textGray hover:text-white transition-colors{% endif %}">Мультфильмы</a>
-            <a href="#" class="text-brand-textGray hover:text-white transition-colors">Актёры</a>
+            <a href="{% url 'my_tickets' %}" class="text-brand-textGray hover:text-white transition-colors">Билеты</a>
             <a href="#" class="text-brand-textGray hover:text-white transition-colors">О нас</a>
         </nav>
 
@@ -105,6 +105,8 @@
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-brand-textGray text-xs"></i>
             </form>
             {% if user.is_authenticated %}
+                <a href="{% url 'profile' user.username %}" class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold hover:scale-105 transition-transform">{{ user.username|first|upper }}</a>
+                <a href="{% url 'profile' user.username %}" class="text-sm text-white font-medium hidden sm:block hover:text-brand-pink transition-colors">{{ user.username }}</a>
                 <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
             {% else %}
                 <a href="{% url 'login' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
@@ -294,7 +296,7 @@
 <!-- ПОДВАЛ -->
 <footer class="mt-16 border-t border-brand-border/40 py-8">
     <div class="max-w-7xl mx-auto px-4 text-center text-brand-textGray text-sm">
-        © 2025 Синема Сити. Все права защищены.
+        © 2026 Синема Сити. Все права защищены.
     </div>
 </footer>
 

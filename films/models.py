@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.text import slugify
 from django.utils.safestring import mark_safe
@@ -159,10 +160,18 @@ class Showtime(models.Model):
 
 
 class Ticket(models.Model):
-    showtime   = models.ForeignKey(Showtime, on_delete=models.CASCADE, verbose_name='Сеанс')
+    showtime    = models.ForeignKey(Showtime, on_delete=models.CASCADE, verbose_name='Сеанс')
     seat_number = models.IntegerField(verbose_name='Место')
     row_number  = models.IntegerField(verbose_name='Ряд')
     is_bought   = models.BooleanField(default=False, verbose_name='Куплен')
+    user        = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='tickets',
+        verbose_name='Покупатель'
+    )
+    bought_at   = models.DateTimeField(null=True, blank=True, verbose_name='Дата покупки')
 
     class Meta:
         verbose_name = 'Билет'
@@ -312,3 +321,29 @@ class BannerItem(models.Model):
 
     def __str__(self):
         return f'Баннер: {self.film}'
+
+
+class Favorite(models.Model):
+    """Избранные фильмы пользователя."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+        verbose_name='Пользователь'
+    )
+    film = models.ForeignKey(
+        Film,
+        on_delete=models.CASCADE,
+        related_name='favorited_by',
+        verbose_name='Фильм'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'film')
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user} → {self.film}'

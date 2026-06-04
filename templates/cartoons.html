@@ -79,7 +79,7 @@
             <a href="{% url 'index' %}" class="text-brand-textGray hover:text-white transition-colors">Главная</a>
             <a href="{% url 'films' %}" class="text-brand-textGray hover:text-white transition-colors">Фильмы</a>
             <a href="{% url 'cartoons' %}" class="text-white border-b-2 border-brand-pink pb-0.5">Мультфильмы</a>
-            <a href="#" class="text-brand-textGray hover:text-white transition-colors">Актёры</a>
+            <a href="{% url 'my_tickets' %}" class="text-brand-textGray hover:text-white transition-colors">Билеты</a>
             <a href="#" class="text-brand-textGray hover:text-white transition-colors">О нас</a>
         </nav>
 
@@ -94,10 +94,9 @@
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-brand-textGray text-xs"></i>
             </form>
             {% if user.is_authenticated %}
-                <form method="post" action="{% url 'logout' %}" class="inline">
-                    {% csrf_token %}
-                    <button type="submit" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</button>
-                </form>
+                <a href="{% url 'profile' user.username %}" class="w-8 h-8 rounded-full bg-brand-pink flex items-center justify-center text-sm font-bold hover:scale-105 transition-transform">{{ user.username|first|upper }}</a>
+                <a href="{% url 'profile' user.username %}" class="text-sm text-white font-medium hidden sm:block hover:text-brand-pink transition-colors">{{ user.username }}</a>
+                <a href="{% url 'logout' %}" class="text-sm text-brand-textGray hover:text-white transition-colors">Выйти</a>
             {% else %}
                 <a href="{% url 'login' %}" class="bg-brand-pink hover:bg-brand-pinkHover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
                     <i class="fa-solid fa-right-to-bracket"></i> Вход
